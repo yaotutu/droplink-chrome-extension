@@ -13,7 +13,8 @@ import type {
 import { ConnectionStatus } from "~types"
 
 import { GotifyClient } from "./lib/gotify-client"
-import { handleMessage } from "./lib/message-handler"
+import { OpenTabHandler, SmsNotificationHandler } from "./lib/handlers"
+import { MessageRouter } from "./lib/message-router"
 import { getConfig, isConfigValid, onConfigChange } from "./lib/storage"
 
 // 全局 Gotify 客户端实例
@@ -24,6 +25,11 @@ let statusInfo: StatusInfo = {
   status: ConnectionStatus.DISCONNECTED,
   configValid: false
 }
+
+// 创建消息路由器
+const router = new MessageRouter()
+router.register(new OpenTabHandler())
+router.register(new SmsNotificationHandler())
 
 /**
  * 初始化扩展
@@ -40,6 +46,9 @@ async function initialize(): Promise<void> {
 
   // 检查配置是否有效
   statusInfo.configValid = isConfigValid(config)
+
+  // 设置路由器配置
+  router.setConfig(config)
 
   // 如果配置有效且启用，则连接
   if (statusInfo.configValid && config.enabled) {
@@ -67,8 +76,12 @@ async function connectToGotify(config: Config): Promise<void> {
     // 创建新的客户端实例
     gotifyClient = new GotifyClient()
 
-    // 注册消息处理器
-    gotifyClient.onMessage(handleMessage)
+    // 注册消息处理器 - 使用路由器
+    gotifyClient.onMessage((message) => {
+      router.route(message).catch((error) => {
+        console.error("[Background] 路由消息时出错:", error)
+      })
+    })
 
     // 注册状态变化处理器
     gotifyClient.onStatusChange((status) => {
@@ -118,6 +131,9 @@ async function handleConfigChange(
   // 更新配置有效性
   statusInfo.configValid = isConfigValid(newConfig)
 
+  // 更新路由器配置
+  router.setConfig(newConfig)
+
   // 如果配置有实质性变化，需要重连
   const needReconnect =
     newConfig.gotifyUrl !== oldConfig.gotifyUrl ||
@@ -146,8 +162,6 @@ chrome.runtime.onMessage.addListener(
     sender,
     sendResponse: (response: RuntimeResponse) => void
   ) => {
-    console.log("[Background] 收到消息:", message)
-
     // 异步处理消息
     ;(async () => {
       try {

@@ -7,9 +7,14 @@ import type { Config } from "~types"
 
 /** 默认配置 */
 const DEFAULT_CONFIG: Config = {
-  gotifyUrl: "",
+  gotifyUrl: "http://111.228.1.24:2345/",
   clientToken: "",
-  enabled: false
+  enabled: false,
+  features: {
+    openTab: true,
+    smsNotification: false,
+    copyToClipboard: false
+  }
 }
 
 /** Storage key */
@@ -30,7 +35,8 @@ export async function getConfig(): Promise<Config> {
     return {
       gotifyUrl: config.gotifyUrl || DEFAULT_CONFIG.gotifyUrl,
       clientToken: config.clientToken || DEFAULT_CONFIG.clientToken,
-      enabled: config.enabled ?? DEFAULT_CONFIG.enabled
+      enabled: config.enabled ?? DEFAULT_CONFIG.enabled,
+      features: config.features || DEFAULT_CONFIG.features
     }
   } catch (error) {
     console.error("[Storage] 读取配置失败:", error)

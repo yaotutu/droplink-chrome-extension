@@ -3,6 +3,18 @@
  */
 
 /**
+ * 功能开关配置
+ */
+export interface FeatureToggles {
+  /** 打开标签页功能 */
+  openTab: boolean
+  /** 短信通知功能 */
+  smsNotification: boolean
+  /** 复制到剪贴板功能（预留） */
+  copyToClipboard: boolean
+}
+
+/**
  * Gotify 服务器配置
  */
 export interface Config {
@@ -12,6 +24,8 @@ export interface Config {
   clientToken: string
   /** 是否启用 Droplink 功能 */
   enabled: boolean
+  /** 功能开关配置 */
+  features: FeatureToggles
 }
 
 /**
@@ -40,9 +54,14 @@ export interface GotifyMessage {
 }
 
 /**
- * Droplink 消息格式
+ * Droplink 消息操作类型
  */
-export interface DroplinkMessage {
+export type DroplinkAction = "openTab" | "smsNotification" | "copyToClipboard"
+
+/**
+ * 打开标签页消息
+ */
+export interface OpenTabMessage {
   /** 操作类型 */
   action: "openTab"
   /** 要打开的 URL */
@@ -53,6 +72,25 @@ export interface DroplinkMessage {
     activate?: boolean
   }
 }
+
+/**
+ * 短信通知消息
+ */
+export interface SmsNotificationMessage {
+  /** 操作类型 */
+  action: "smsNotification"
+  /** 短信内容 */
+  content: string
+  /** 发送者（可选） */
+  sender?: string
+  /** 验证码（可选，自动提取） */
+  verificationCode?: string
+}
+
+/**
+ * Droplink 消息联合类型
+ */
+export type DroplinkMessage = OpenTabMessage | SmsNotificationMessage
 
 /**
  * 连接状态
@@ -109,3 +147,67 @@ export interface StatusInfo {
   /** 错误信息 */
   error?: string
 }
+
+/**
+ * Gotify 客户端响应
+ */
+export interface GotifyClient {
+  /** 客户端 ID */
+  id: number
+  /** 客户端 Token */
+  token: string
+  /** 客户端名称 */
+  name: string
+  /** 最后使用时间 */
+  lastUsed?: string
+}
+
+/**
+ * 创建客户端请求参数
+ */
+export interface CreateClientParams {
+  /** 客户端名称 */
+  name: string
+}
+
+/**
+ * 认证凭证（仅用于临时传递，不存储）
+ */
+export interface Credentials {
+  /** 用户名 */
+  username: string
+  /** 密码 */
+  password: string
+}
+
+/**
+ * 登录方式
+ */
+export enum LoginMode {
+  /** 账号密码登录 */
+  CREDENTIALS = "credentials",
+  /** Token 登录 */
+  TOKEN = "token"
+}
+
+/**
+ * 钩子上下文
+ */
+export interface HookContext {
+  /** Gotify 原始消息 */
+  message: GotifyMessage
+  /** 消息动作类型 */
+  action: DroplinkAction
+  /** 是否已被取消（pre-process 钩子可设置） */
+  cancelled?: boolean
+  /** 处理结果（post-process 钩子可用） */
+  result?: {
+    success: boolean
+    error?: string
+  }
+}
+
+/**
+ * 钩子处理函数
+ */
+export type HookFn = (context: HookContext) => void | Promise<void>

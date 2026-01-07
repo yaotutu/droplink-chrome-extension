@@ -3,18 +3,12 @@ import { useEffect, useState } from "react"
 import type { Config, RuntimeMessage, RuntimeResponse, StatusInfo } from "~types"
 
 import { ConnectionStatus } from "~types"
-import {
-  getConfig,
-  isConfigValid,
-  saveConfig,
-  validateToken,
-  validateUrl
-} from "~lib/storage"
+import { getConfig, saveConfig } from "~lib/storage"
 
 function IndexPopup() {
   // 状态
   const [config, setConfig] = useState<Config>({
-    gotifyUrl: "",
+    gotifyUrl: "http://111.228.1.24:2345/",
     clientToken: "",
     enabled: false
   })
@@ -23,13 +17,6 @@ function IndexPopup() {
     configValid: false
   })
   const [loading, setLoading] = useState(true)
-  const [saving, setSaving] = useState(false)
-  const [testing, setTesting] = useState(false)
-  const [showToken, setShowToken] = useState(false)
-  const [errors, setErrors] = useState<{
-    url?: string
-    token?: string
-  }>({})
 
   // 加载配置和状态
   useEffect(() => {
@@ -68,93 +55,28 @@ function IndexPopup() {
     })
   }
 
-  // 处理配置变化
-  const handleConfigChange = (field: keyof Config, value: any) => {
-    setConfig((prev) => ({
-      ...prev,
-      [field]: value
-    }))
-
-    // 清除对应字段的错误
-    if (field === "gotifyUrl" || field === "clientToken") {
-      setErrors((prev) => ({
-        ...prev,
-        [field === "gotifyUrl" ? "url" : "token"]: undefined
-      }))
-    }
-  }
-
-  // 验证表单
-  const validateForm = (): boolean => {
-    const newErrors: { url?: string; token?: string } = {}
-
-    // 验证 URL
-    const urlValidation = validateUrl(config.gotifyUrl)
-    if (!urlValidation.valid) {
-      newErrors.url = urlValidation.error
-    }
-
-    // 验证 Token
-    const tokenValidation = validateToken(config.clientToken)
-    if (!tokenValidation.valid) {
-      newErrors.token = tokenValidation.error
-    }
-
-    setErrors(newErrors)
-    return Object.keys(newErrors).length === 0
-  }
-
-  // 保存配置
-  const handleSave = async () => {
-    // 验证表单
-    if (!validateForm()) {
-      return
+  // 处理启用/禁用切换
+  const handleToggleEnabled = async () => {
+    const newConfig = {
+      ...config,
+      enabled: !config.enabled
     }
 
     try {
-      setSaving(true)
-
-      // 保存到 storage
-      await saveConfig(config)
-
-      alert("配置已保存!")
+      await saveConfig(newConfig)
+      setConfig(newConfig)
 
       // 重新加载状态
       await loadData()
     } catch (error) {
-      console.error("保存配置失败:", error)
-      alert("保存配置失败: " + error)
-    } finally {
-      setSaving(false)
+      console.error("切换状态失败:", error)
+      alert("操作失败: " + error)
     }
   }
 
-  // 测试连接
-  const handleTest = async () => {
-    // 验证表单
-    if (!validateForm()) {
-      return
-    }
-
-    try {
-      setTesting(true)
-
-      const response = await sendMessage({
-        type: "testConnection",
-        data: config
-      })
-
-      if (response.success) {
-        alert("连接成功!")
-      } else {
-        alert("连接失败: " + (response.error || "未知错误"))
-      }
-    } catch (error) {
-      console.error("测试连接失败:", error)
-      alert("测试连接失败: " + error)
-    } finally {
-      setTesting(false)
-    }
+  // 打开设置页面
+  const openSettings = () => {
+    chrome.runtime.openOptionsPage()
   }
 
   // 获取状态文本
@@ -199,125 +121,85 @@ function IndexPopup() {
 
   return (
     <div style={styles.container}>
-      <h2 style={styles.title}>Droplink 配置</h2>
+      <div style={styles.header}>
+        <h2 style={styles.title}>Droplink</h2>
+        <div style={styles.version}>v0.0.1</div>
+      </div>
 
-      <div style={styles.form}>
-        {/* Gotify 服务器地址 */}
-        <div style={styles.field}>
-          <label style={styles.label}>Gotify 服务器地址:</label>
-          <input
-            type="text"
-            placeholder="https://gotify.example.com"
-            value={config.gotifyUrl}
-            onChange={(e) => handleConfigChange("gotifyUrl", e.target.value)}
-            style={{
-              ...styles.input,
-              ...(errors.url ? styles.inputError : {})
-            }}
-          />
-          {errors.url && <div style={styles.errorText}>{errors.url}</div>}
-        </div>
-
-        {/* 客户端 Token */}
-        <div style={styles.field}>
-          <label style={styles.label}>客户端 Token:</label>
-          <div style={styles.passwordContainer}>
-            <input
-              type={showToken ? "text" : "password"}
-              placeholder="输入 Gotify 客户端 Token"
-              value={config.clientToken}
-              onChange={(e) =>
-                handleConfigChange("clientToken", e.target.value)
-              }
+      {/* 连接状态 */}
+      <div style={styles.statusCard}>
+        <div style={styles.statusHeader}>
+          <span style={styles.statusLabel}>连接状态</span>
+          <div style={styles.statusIndicatorContainer}>
+            <span
               style={{
-                ...styles.input,
-                ...(errors.token ? styles.inputError : {}),
-                flex: 1
-              }}
-            />
-            <button
-              onClick={() => setShowToken(!showToken)}
-              style={styles.toggleButton}>
-              {showToken ? "隐藏" : "显示"}
-            </button>
+                ...styles.statusIndicator,
+                backgroundColor: getStatusColor()
+              }}></span>
+            <span style={styles.statusText}>{getStatusText()}</span>
           </div>
-          {errors.token && <div style={styles.errorText}>{errors.token}</div>}
         </div>
 
-        {/* 启用开关 */}
-        <div style={styles.field}>
-          <label style={styles.checkboxLabel}>
-            <input
-              type="checkbox"
-              checked={config.enabled}
-              onChange={(e) => handleConfigChange("enabled", e.target.checked)}
-              style={styles.checkbox}
-            />
-            启用 Droplink
-          </label>
-        </div>
-
-        {/* 连接状态 */}
-        <div style={styles.statusContainer}>
-          <span style={styles.statusLabel}>状态:</span>
-          <span
-            style={{
-              ...styles.statusIndicator,
-              backgroundColor: getStatusColor()
-            }}></span>
-          <span style={styles.statusText}>{getStatusText()}</span>
-        </div>
+        {/* 服务器地址 */}
+        {config.gotifyUrl && (
+          <div style={styles.infoRow}>
+            <span style={styles.infoLabel}>服务器:</span>
+            <span style={styles.infoValue}>
+              {new URL(config.gotifyUrl).host}
+            </span>
+          </div>
+        )}
 
         {/* 最后连接时间 */}
         {status.lastConnected && (
-          <div style={styles.infoText}>
-            最后连接: {new Date(status.lastConnected).toLocaleString("zh-CN")}
+          <div style={styles.infoRow}>
+            <span style={styles.infoLabel}>最后连接:</span>
+            <span style={styles.infoValue}>
+              {new Date(status.lastConnected).toLocaleString("zh-CN", {
+                month: "2-digit",
+                day: "2-digit",
+                hour: "2-digit",
+                minute: "2-digit"
+              })}
+            </span>
           </div>
         )}
 
         {/* 错误信息 */}
         {status.error && (
-          <div style={styles.errorText}>错误: {status.error}</div>
+          <div style={styles.errorBox}>
+            <span style={styles.errorIcon}>⚠️</span>
+            <span style={styles.errorText}>{status.error}</span>
+          </div>
         )}
+      </div>
 
-        {/* 按钮 */}
-        <div style={styles.buttonContainer}>
-          <button
-            onClick={handleTest}
-            disabled={testing || !isConfigValid(config)}
-            style={{
-              ...styles.button,
-              ...styles.testButton,
-              ...(testing || !isConfigValid(config)
-                ? styles.buttonDisabled
-                : {})
-            }}>
-            {testing ? "测试中..." : "测试连接"}
-          </button>
-          <button
-            onClick={handleSave}
-            disabled={saving || !isConfigValid(config)}
-            style={{
-              ...styles.button,
-              ...styles.saveButton,
-              ...(saving || !isConfigValid(config)
-                ? styles.buttonDisabled
-                : {})
-            }}>
-            {saving ? "保存中..." : "保存"}
-          </button>
+      {/* 启用开关 */}
+      <div style={styles.toggleCard}>
+        <label style={styles.toggleLabel}>
+          <input
+            type="checkbox"
+            checked={config.enabled}
+            onChange={handleToggleEnabled}
+            style={styles.checkbox}
+          />
+          <span>启用 Droplink</span>
+        </label>
+      </div>
+
+      {/* 操作按钮 */}
+      <button onClick={openSettings} style={styles.settingsButton}>
+        <span style={styles.buttonIcon}>⚙️</span>
+        <span>打开设置</span>
+      </button>
+
+      {/* 配置提示 */}
+      {!status.configValid && (
+        <div style={styles.warningCard}>
+          <span style={styles.warningIcon}>ℹ️</span>
+          <span style={styles.warningText}>请先配置 Gotify 服务器</span>
         </div>
-      </div>
-
-      {/* 帮助文本 */}
-      <div style={styles.helpText}>
-        <p>提示:</p>
-        <ul style={styles.helpList}>
-          <li>在 Gotify 设置中创建一个客户端，获取客户端 Token</li>
-          <li>Token 将用于 WebSocket 连接接收实时消息</li>
-          <li>启用后扩展将自动连接到 Gotify 服务器</li>
-        </ul>
-      </div>
+      )}
     </div>
   )
 }
@@ -325,135 +207,149 @@ function IndexPopup() {
 // 样式
 const styles: Record<string, React.CSSProperties> = {
   container: {
-    width: 400,
-    padding: 20,
-    fontFamily: "Arial, sans-serif"
+    width: 320,
+    padding: 16,
+    fontFamily: "Arial, sans-serif",
+    backgroundColor: "#f5f5f5"
+  },
+  header: {
+    display: "flex",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: 16
   },
   title: {
-    fontSize: 20,
+    fontSize: 18,
     fontWeight: "bold",
-    marginBottom: 20,
-    marginTop: 0,
+    margin: 0,
     color: "#333"
   },
-  form: {
-    display: "flex",
-    flexDirection: "column",
-    gap: 16
-  },
-  field: {
-    display: "flex",
-    flexDirection: "column",
-    gap: 6
-  },
-  label: {
-    fontSize: 14,
-    fontWeight: "500",
-    color: "#555"
-  },
-  input: {
-    padding: 8,
-    fontSize: 14,
-    border: "1px solid #ddd",
-    borderRadius: 4,
-    outline: "none"
-  },
-  inputError: {
-    borderColor: "#f44336"
-  },
-  passwordContainer: {
-    display: "flex",
-    gap: 8
-  },
-  toggleButton: {
-    padding: "8px 12px",
+  version: {
     fontSize: 12,
-    border: "1px solid #ddd",
-    borderRadius: 4,
-    backgroundColor: "#f5f5f5",
-    cursor: "pointer"
+    color: "#999"
   },
-  checkboxLabel: {
+  statusCard: {
+    backgroundColor: "#fff",
+    borderRadius: 8,
+    padding: 16,
+    marginBottom: 12,
+    boxShadow: "0 1px 3px rgba(0,0,0,0.1)"
+  },
+  statusHeader: {
     display: "flex",
+    justifyContent: "space-between",
     alignItems: "center",
-    gap: 8,
-    fontSize: 14,
-    color: "#555",
-    cursor: "pointer"
-  },
-  checkbox: {
-    width: 16,
-    height: 16,
-    cursor: "pointer"
-  },
-  statusContainer: {
-    display: "flex",
-    alignItems: "center",
-    gap: 8,
-    padding: 10,
-    backgroundColor: "#f5f5f5",
-    borderRadius: 4
+    marginBottom: 12,
+    paddingBottom: 12,
+    borderBottom: "1px solid #eee"
   },
   statusLabel: {
     fontSize: 14,
     fontWeight: "500",
     color: "#555"
   },
+  statusIndicatorContainer: {
+    display: "flex",
+    alignItems: "center",
+    gap: 6
+  },
   statusIndicator: {
-    width: 10,
-    height: 10,
+    width: 8,
+    height: 8,
     borderRadius: "50%"
   },
   statusText: {
-    fontSize: 14,
+    fontSize: 13,
     color: "#555"
   },
-  infoText: {
-    fontSize: 12,
-    color: "#777"
+  infoRow: {
+    display: "flex",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginTop: 8,
+    fontSize: 12
+  },
+  infoLabel: {
+    color: "#777",
+    fontWeight: "500"
+  },
+  infoValue: {
+    color: "#555"
+  },
+  errorBox: {
+    display: "flex",
+    alignItems: "center",
+    gap: 6,
+    marginTop: 12,
+    padding: 8,
+    backgroundColor: "#ffebee",
+    borderRadius: 4,
+    fontSize: 12
+  },
+  errorIcon: {
+    fontSize: 14
   },
   errorText: {
-    fontSize: 12,
-    color: "#f44336"
+    color: "#c62828",
+    flex: 1
   },
-  buttonContainer: {
+  toggleCard: {
+    backgroundColor: "#fff",
+    borderRadius: 8,
+    padding: 16,
+    marginBottom: 12,
+    boxShadow: "0 1px 3px rgba(0,0,0,0.1)"
+  },
+  toggleLabel: {
     display: "flex",
+    alignItems: "center",
     gap: 10,
-    marginTop: 8
+    fontSize: 14,
+    color: "#555",
+    cursor: "pointer",
+    fontWeight: "500"
   },
-  button: {
-    flex: 1,
-    padding: 10,
+  checkbox: {
+    width: 18,
+    height: 18,
+    cursor: "pointer"
+  },
+  settingsButton: {
+    width: "100%",
+    padding: 12,
     fontSize: 14,
     fontWeight: "500",
     border: "none",
-    borderRadius: 4,
-    cursor: "pointer",
-    transition: "background-color 0.2s"
-  },
-  testButton: {
+    borderRadius: 8,
     backgroundColor: "#2196f3",
-    color: "white"
+    color: "white",
+    cursor: "pointer",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 8,
+    marginBottom: 12,
+    transition: "background-color 0.2s",
+    boxShadow: "0 1px 3px rgba(0,0,0,0.1)"
   },
-  saveButton: {
-    backgroundColor: "#4caf50",
-    color: "white"
+  buttonIcon: {
+    fontSize: 16
   },
-  buttonDisabled: {
-    opacity: 0.5,
-    cursor: "not-allowed"
-  },
-  helpText: {
-    marginTop: 20,
+  warningCard: {
+    backgroundColor: "#fff3e0",
+    borderRadius: 8,
     padding: 12,
-    backgroundColor: "#e3f2fd",
-    borderRadius: 4,
-    fontSize: 12,
-    color: "#555"
+    display: "flex",
+    alignItems: "center",
+    gap: 8,
+    fontSize: 12
   },
-  helpList: {
-    margin: "8px 0 0 0",
-    paddingLeft: 20
+  warningIcon: {
+    fontSize: 16
+  },
+  warningText: {
+    color: "#f57c00",
+    flex: 1
   },
   loading: {
     textAlign: "center",
