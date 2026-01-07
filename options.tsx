@@ -4,6 +4,8 @@ import type {
   Config,
   Credentials,
   FeatureToggles,
+  NotificationRule,
+  NotificationRuleType,
   RuntimeMessage,
   RuntimeResponse,
   StatusInfo
@@ -33,8 +35,13 @@ function OptionsPage() {
     enabled: false,
     features: {
       openTab: true,
-      smsNotification: false,
-      copyToClipboard: false
+      notification: false
+    },
+    openTabNotification: false,
+    notificationFilters: {
+      enabled: false,
+      filterOpenTab: false,
+      rules: []
     }
   })
 
@@ -64,6 +71,13 @@ function OptionsPage() {
     username?: string
     password?: string
   }>({})
+
+  // 规则相关状态
+  const [editingRuleId, setEditingRuleId] = useState<string | null>(null)
+  const [newKeyword, setNewKeyword] = useState("")
+  const [newRuleType, setNewRuleType] = useState<NotificationRuleType>("include")
+  const [newRuleKeywords, setNewRuleKeywords] = useState<string[]>([])
+  const [newRuleKeywordInput, setNewRuleKeywordInput] = useState("")
 
   // 加载配置和状态
   useEffect(() => {
@@ -294,7 +308,12 @@ function OptionsPage() {
       const emptyConfig: Config = {
         gotifyUrl: "http://111.228.1.24:2345/",
         clientToken: "",
-        enabled: false
+        enabled: false,
+        features: {
+          openTab: true,
+          notification: false
+        },
+        openTabNotification: false
       }
 
       await saveConfig(emptyConfig)
@@ -324,17 +343,47 @@ function OptionsPage() {
     setCredentialsErrors({})
   }
 
+  // 处理总开关切换
+  const handleEnabledToggle = async (enabled: boolean) => {
+    const newConfig = {
+      ...config,
+      enabled
+    }
+
+    // 如果关闭总开关，同时关闭所有子功能
+    if (!enabled) {
+      newConfig.features = {
+        openTab: false,
+        notification: false
+      }
+    }
+
+    try {
+      await saveConfig(newConfig)
+      setConfig(newConfig)
+      console.log(`[Options] 总开关 ${enabled ? "已启用" : "已禁用"}`)
+    } catch (error) {
+      console.error("[Options] 更新总开关失败:", error)
+      alert(`操作失败: ${error}`)
+    }
+  }
+
   // 处理功能开关切换
   const handleFeatureToggle = async (
     feature: keyof FeatureToggles,
     enabled: boolean
   ) => {
-    const newConfig = {
+    let newConfig = {
       ...config,
       features: {
         ...config.features,
         [feature]: enabled
       }
+    }
+
+    // 如果启用任何子功能，自动打开总开关
+    if (enabled && !config.enabled) {
+      newConfig.enabled = true
     }
 
     try {
@@ -345,6 +394,163 @@ function OptionsPage() {
       console.error(`[Options] 更新功能开关失败:`, error)
       alert(`操作失败: ${error}`)
     }
+  }
+
+  // 切换过滤开关
+  const handleFilterEnabledToggle = async (checked: boolean) => {
+    const newFilters = {
+      ...config.notificationFilters,
+      enabled: checked
+    }
+
+    const newConfig = {
+      ...config,
+      notificationFilters: newFilters
+    }
+
+    try {
+      await saveConfig(newConfig)
+      setConfig(newConfig)
+    } catch (error) {
+      console.error("[Options] 更新过滤开关失败:", error)
+      alert(`操作失败: ${error}`)
+    }
+  }
+
+  // 切换 filterOpenTab
+  const handleFilterOpenTabToggle = async (checked: boolean) => {
+    const newFilters = {
+      ...config.notificationFilters,
+      filterOpenTab: checked
+    }
+
+    const newConfig = {
+      ...config,
+      notificationFilters: newFilters
+    }
+
+    try {
+      await saveConfig(newConfig)
+      setConfig(newConfig)
+    } catch (error) {
+      console.error("[Options] 更新过滤规则失败:", error)
+      alert(`操作失败: ${error}`)
+    }
+  }
+
+  // 生成规则 ID
+  const generateRuleId = () => Date.now().toString()
+
+  // 添加新规则
+  const addRule = async () => {
+    if (newRuleKeywords.length === 0) return
+
+    const newRule: NotificationRule = {
+      id: generateRuleId(),
+      type: newRuleType,
+      keywords: newRuleKeywords
+    }
+
+    const newFilters = {
+      ...config.notificationFilters,
+      rules: [...(config.notificationFilters?.rules || []), newRule]
+    }
+
+    const newConfig = { ...config, notificationFilters: newFilters }
+
+    try {
+      await saveConfig(newConfig)
+      setConfig(newConfig)
+      // 重置表单
+      setNewRuleKeywords([])
+      setNewRuleKeywordInput("")
+    } catch (error) {
+      console.error("[Options] 添加规则失败:", error)
+      alert(`操作失败: ${error}`)
+    }
+  }
+
+  // 删除规则
+  const deleteRule = async (ruleId: string) => {
+    const newFilters = {
+      ...config.notificationFilters,
+      rules: (config.notificationFilters?.rules || []).filter((r) => r.id !== ruleId)
+    }
+
+    const newConfig = { ...config, notificationFilters: newFilters }
+
+    try {
+      await saveConfig(newConfig)
+      setConfig(newConfig)
+    } catch (error) {
+      console.error("[Options] 删除规则失败:", error)
+      alert(`操作失败: ${error}`)
+    }
+  }
+
+  // 向规则添加关键词
+  const addKeywordToRule = async (ruleId: string, keyword: string) => {
+    const newFilters = {
+      ...config.notificationFilters,
+      rules: (config.notificationFilters?.rules || []).map((rule) => {
+        if (rule.id === ruleId) {
+          return {
+            ...rule,
+            keywords: [...rule.keywords, keyword]
+          }
+        }
+        return rule
+      })
+    }
+
+    const newConfig = { ...config, notificationFilters: newFilters }
+
+    try {
+      await saveConfig(newConfig)
+      setConfig(newConfig)
+    } catch (error) {
+      console.error("[Options] 添加关键词失败:", error)
+      alert(`操作失败: ${error}`)
+    }
+  }
+
+  // 从规则删除关键词
+  const removeKeywordFromRule = async (ruleId: string, keyword: string) => {
+    const newFilters = {
+      ...config.notificationFilters,
+      rules: (config.notificationFilters?.rules || []).map((rule) => {
+        if (rule.id === ruleId) {
+          return {
+            ...rule,
+            keywords: rule.keywords.filter((k) => k !== keyword)
+          }
+        }
+        return rule
+      })
+    }
+
+    const newConfig = { ...config, notificationFilters: newFilters }
+
+    try {
+      await saveConfig(newConfig)
+      setConfig(newConfig)
+    } catch (error) {
+      console.error("[Options] 删除关键词失败:", error)
+      alert(`操作失败: ${error}`)
+    }
+  }
+
+  // 向新规则添加临时关键词
+  const addKeywordToNewRule = () => {
+    if (!newRuleKeywordInput.trim()) return
+
+    setNewRuleKeywords([...newRuleKeywords, newRuleKeywordInput.trim()])
+    setNewRuleKeywordInput("")
+  }
+
+  // 从新规则删除临时关键词
+  const removeKeywordFromNewRule = (keyword: string) => {
+    setNewRuleKeywords(newRuleKeywords.filter((k) => k !== keyword))
   }
 
   // 隐藏 Token 中间部分（显示前4位和后4位）
@@ -395,42 +601,436 @@ function OptionsPage() {
             }}>
             <h4 style={{ marginTop: 0, marginBottom: 12 }}>功能设置</h4>
 
+            {/* 总开关 */}
             <label
               style={{
                 display: "block",
-                marginBottom: 12,
-                cursor: "pointer"
+                marginBottom: 16,
+                cursor: "pointer",
+                fontSize: 15,
+                fontWeight: "600",
+                paddingBottom: 12,
+                borderBottom: "1px solid #e0e0e0"
               }}>
               <input
                 type="checkbox"
-                checked={config.features.openTab}
-                onChange={(e) => handleFeatureToggle("openTab", e.target.checked)}
+                checked={config.enabled}
+                onChange={(e) => handleEnabledToggle(e.target.checked)}
                 style={{ marginRight: 8 }}
               />
-              自动打开标签页
+              启用 Droplink
             </label>
 
-            <label
-              style={{
-                display: "block",
-                marginBottom: 12,
-                cursor: "pointer"
-              }}>
-              <input
-                type="checkbox"
-                checked={config.features.smsNotification}
-                onChange={(e) =>
-                  handleFeatureToggle("smsNotification", e.target.checked)
-                }
-                style={{ marginRight: 8 }}
-              />
-              短信通知（显示通知 + 复制验证码）
-            </label>
+            {/* 子功能开关 */}
+            <div style={{ marginLeft: 8 }}>
+              <label
+                style={{
+                  display: "block",
+                  marginBottom: 12,
+                  cursor: config.enabled ? "pointer" : "not-allowed",
+                  opacity: config.enabled ? 1 : 0.5
+                }}>
+                <input
+                  type="checkbox"
+                  checked={config.features.openTab}
+                  onChange={(e) => handleFeatureToggle("openTab", e.target.checked)}
+                  disabled={!config.enabled}
+                  style={{ marginRight: 8 }}
+                />
+                自动打开标签页
+              </label>
 
-            <label style={{ display: "block", opacity: 0.5 }}>
-              <input type="checkbox" disabled style={{ marginRight: 8 }} />
-              复制到剪贴板（即将推出）
-            </label>
+              {/* 打开标签页通知开关（仅当 openTab 启用时显示） */}
+              {config.features.openTab && (
+                <label
+                  style={{
+                    display: "block",
+                    marginBottom: 12,
+                    marginLeft: 20,
+                    cursor: config.enabled ? "pointer" : "not-allowed",
+                    opacity: config.enabled ? 1 : 0.5,
+                    fontSize: 13,
+                    color: "#666"
+                  }}>
+                  <input
+                    type="checkbox"
+                    checked={config.openTabNotification}
+                    onChange={(e) => {
+                      const newConfig = { ...config, openTabNotification: e.target.checked }
+                      saveConfig(newConfig).then(() => setConfig(newConfig))
+                    }}
+                    disabled={!config.enabled}
+                    style={{ marginRight: 8 }}
+                  />
+                  打开标签页时显示通知
+                </label>
+              )}
+
+              <label
+                style={{
+                  display: "block",
+                  marginBottom: 12,
+                  cursor: config.enabled ? "pointer" : "not-allowed",
+                  opacity: config.enabled ? 1 : 0.5
+                }}>
+                <input
+                  type="checkbox"
+                  checked={config.features.notification}
+                  onChange={(e) =>
+                    handleFeatureToggle("notification", e.target.checked)
+                  }
+                  disabled={!config.enabled}
+                  style={{ marginRight: 8 }}
+                />
+                通知
+              </label>
+
+              {/* 过滤规则配置 */}
+              {config.features.notification && (
+                <div
+                  style={{
+                    marginLeft: 20,
+                    marginTop: 12,
+                    padding: 12,
+                    backgroundColor: "#e8f5e9",
+                    borderRadius: 6
+                  }}>
+                  {/* 功能描述 */}
+                  <div
+                    style={{
+                      fontSize: 12,
+                      color: "#666",
+                      marginBottom: 12,
+                      lineHeight: "1.5"
+                    }}>
+                    这是标准的 Gotify 服务，会接收所有 Gotify 消息。
+                    <br />
+                    默认展示所有消息，可以选择启用过滤规则来控制哪些消息需要展示。
+                  </div>
+
+                  {/* 启用过滤开关 */}
+                  <label
+                    style={{
+                      display: "block",
+                      marginBottom: 12,
+                      cursor: config.enabled ? "pointer" : "not-allowed",
+                      fontSize: 14,
+                      fontWeight: "500",
+                      opacity: config.enabled ? 1 : 0.5
+                    }}>
+                    <input
+                      type="checkbox"
+                      checked={config.notificationFilters?.enabled || false}
+                      onChange={(e) => handleFilterEnabledToggle(e.target.checked)}
+                      disabled={!config.enabled}
+                      style={{ marginRight: 8 }}
+                    />
+                    启用过滤规则
+                  </label>
+
+                  {/* 过滤配置区域 - 只有启用过滤时才显示 */}
+                  {config.notificationFilters?.enabled && (
+                    <>
+                      {/* 过滤 openTab 消息 */}
+                      <label
+                        style={{
+                          display: "block",
+                          marginBottom: 12,
+                          cursor: config.enabled ? "pointer" : "not-allowed",
+                          fontSize: 13,
+                          opacity: config.enabled ? 1 : 0.5,
+                          marginLeft: 20
+                        }}>
+                        <input
+                          type="checkbox"
+                          checked={config.notificationFilters?.filterOpenTab || false}
+                          onChange={(e) => handleFilterOpenTabToggle(e.target.checked)}
+                          disabled={!config.enabled}
+                          style={{ marginRight: 8 }}
+                        />
+                        过滤 openTab 消息（不显示打开链接的消息）
+                      </label>
+
+                      {/* 现有规则列表 */}
+                      <div style={{ marginBottom: 12, marginLeft: 20 }}>
+                        <div
+                          style={{
+                            fontSize: 13,
+                            fontWeight: "500",
+                            color: "#555",
+                            marginBottom: 8
+                          }}>
+                          规则列表：
+                        </div>
+
+                        {config.notificationFilters?.rules?.map((rule) => (
+                      <div
+                        key={rule.id}
+                        style={{
+                          padding: 8,
+                          marginBottom: 8,
+                          backgroundColor: "#fff",
+                          borderRadius: 4,
+                          border: "1px solid #ddd"
+                        }}>
+                        {/* 规则头部 */}
+                        <div
+                          style={{
+                            display: "flex",
+                            justifyContent: "space-between",
+                            alignItems: "center",
+                            marginBottom: 6
+                          }}>
+                          <span style={{ fontSize: 12, fontWeight: "bold", color: "#333" }}>
+                            {rule.type === "include" ? "包含" : "不包含"}
+                          </span>
+                          <button
+                            onClick={() => deleteRule(rule.id)}
+                            disabled={!config.enabled}
+                            style={{
+                              ...styles.button,
+                              ...styles.deleteButton,
+                              fontSize: 11,
+                              padding: "4px 8px"
+                            }}>
+                            删除
+                          </button>
+                        </div>
+
+                        {/* 关键词列表 */}
+                        <div style={{ marginBottom: 6 }}>
+                          {rule.keywords.map((keyword) => (
+                            <span
+                              key={keyword}
+                              style={{
+                                display: "inline-flex",
+                                alignItems: "center",
+                                gap: 4,
+                                padding: "2px 6px",
+                                backgroundColor:
+                                  rule.type === "include" ? "#c8e6c9" : "#ffcdd2",
+                                borderRadius: 10,
+                                fontSize: 11,
+                                color: rule.type === "include" ? "#2e7d32" : "#c62828",
+                                marginRight: 4,
+                                marginBottom: 4
+                              }}>
+                              {keyword}
+                              <button
+                                onClick={() => removeKeywordFromRule(rule.id, keyword)}
+                                disabled={!config.enabled}
+                                style={{
+                                  background: "none",
+                                  border: "none",
+                                  color: "inherit",
+                                  cursor: "pointer",
+                                  fontSize: 12,
+                                  padding: 0,
+                                  lineHeight: 1
+                                }}>
+                                ×
+                              </button>
+                            </span>
+                          ))}
+                        </div>
+
+                        {/* 添加关键词输入框 */}
+                        <div style={{ display: "flex", gap: 4 }}>
+                          <input
+                            type="text"
+                            placeholder="添加关键词"
+                            value={
+                              editingRuleId === rule.id ? newKeyword : ""
+                            }
+                            onChange={(e) => {
+                              setEditingRuleId(rule.id)
+                              setNewKeyword(e.target.value)
+                            }}
+                            disabled={!config.enabled}
+                            style={{
+                              ...styles.input,
+                              flex: 1,
+                              fontSize: 11,
+                              padding: "4px 6px"
+                            }}
+                          />
+                          <button
+                            onClick={() => {
+                              if (newKeyword.trim()) {
+                                addKeywordToRule(rule.id, newKeyword.trim())
+                                setNewKeyword("")
+                                setEditingRuleId(null)
+                              }
+                            }}
+                            disabled={!config.enabled || !newKeyword.trim()}
+                            style={{
+                              ...styles.button,
+                              ...(newKeyword.trim() ? styles.addButton : styles.buttonDisabled),
+                              fontSize: 11,
+                              padding: "4px 8px"
+                            }}>
+                            添加
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+
+                    {(!config.notificationFilters?.rules ||
+                      config.notificationFilters.rules.length === 0) && (
+                      <div
+                        style={{
+                          fontSize: 12,
+                          color: "#999",
+                          fontStyle: "italic",
+                          padding: 8,
+                          textAlign: "center"
+                        }}>
+                        暂无规则，所有消息都会展示
+                      </div>
+                    )}
+                  </div>
+
+                  {/* 添加新规则表单 */}
+                  <div
+                    style={{
+                      padding: 12,
+                      backgroundColor: "#fff",
+                      borderRadius: 4,
+                      border: "1px dashed #4caf50"
+                    }}>
+                    <div
+                      style={{
+                        fontSize: 13,
+                        fontWeight: "500",
+                        color: "#555",
+                        marginBottom: 8
+                      }}>
+                      添加新规则：
+                    </div>
+
+                    {/* 规则类型选择 */}
+                    <div style={{ marginBottom: 8 }}>
+                      <label style={{ fontSize: 12, color: "#555", marginRight: 12 }}>
+                        <input
+                          type="radio"
+                          name="newRuleType"
+                          value="include"
+                          checked={newRuleType === "include"}
+                          onChange={(e) =>
+                            setNewRuleType(e.target.value as NotificationRuleType)
+                          }
+                          disabled={!config.enabled}
+                          style={{ marginRight: 4 }}
+                        />
+                        包含
+                      </label>
+                      <label style={{ fontSize: 12, color: "#555" }}>
+                        <input
+                          type="radio"
+                          name="newRuleType"
+                          value="exclude"
+                          checked={newRuleType === "exclude"}
+                          onChange={(e) =>
+                            setNewRuleType(e.target.value as NotificationRuleType)
+                          }
+                          disabled={!config.enabled}
+                          style={{ marginRight: 4 }}
+                        />
+                        不包含
+                      </label>
+                    </div>
+
+                    {/* 关键词输入 */}
+                    <div style={{ marginBottom: 8 }}>
+                      <div style={{ display: "flex", gap: 4, marginBottom: 4 }}>
+                        <input
+                          type="text"
+                          placeholder="输入关键词"
+                          value={newRuleKeywordInput}
+                          onChange={(e) => setNewRuleKeywordInput(e.target.value)}
+                          disabled={!config.enabled}
+                          onKeyPress={(e) => {
+                            if (e.key === "Enter") {
+                              e.preventDefault()
+                              addKeywordToNewRule()
+                            }
+                          }}
+                          style={{
+                            ...styles.input,
+                            flex: 1,
+                            fontSize: 12,
+                            padding: "4px 6px"
+                          }}
+                        />
+                        <button
+                          onClick={addKeywordToNewRule}
+                          disabled={!config.enabled || !newRuleKeywordInput.trim()}
+                          style={{
+                            ...styles.button,
+                            ...(newRuleKeywordInput.trim()
+                              ? styles.addButton
+                              : styles.buttonDisabled),
+                            fontSize: 12,
+                            padding: "4px 8px"
+                          }}>
+                          添加
+                        </button>
+                      </div>
+
+                      {/* 已添加的关键词 */}
+                      {newRuleKeywords.map((keyword) => (
+                        <span
+                          key={keyword}
+                          style={{
+                            display: "inline-flex",
+                            alignItems: "center",
+                            gap: 4,
+                            padding: "2px 6px",
+                            backgroundColor:
+                              newRuleType === "include" ? "#c8e6c9" : "#ffcdd2",
+                            borderRadius: 10,
+                            fontSize: 11,
+                            color: newRuleType === "include" ? "#2e7d32" : "#c62828",
+                            marginRight: 4,
+                            marginBottom: 4
+                          }}>
+                          {keyword}
+                          <button
+                            onClick={() => removeKeywordFromNewRule(keyword)}
+                            style={{
+                              background: "none",
+                              border: "none",
+                              color: "inherit",
+                              cursor: "pointer",
+                              fontSize: 12,
+                              padding: 0,
+                              lineHeight: 1
+                            }}>
+                            ×
+                          </button>
+                        </span>
+                      ))}
+                    </div>
+
+                    {/* 创建规则按钮 */}
+                    <button
+                      onClick={addRule}
+                      disabled={!config.enabled || newRuleKeywords.length === 0}
+                      style={{
+                        ...styles.button,
+                        ...(newRuleKeywords.length > 0
+                          ? styles.addButton
+                          : styles.buttonDisabled),
+                        fontSize: 12,
+                        padding: "6px 12px",
+                        width: "100%"
+                      }}>
+                      创建规则
+                    </button>
+                  </div>
+                </>
+              )}
+            </div>
           </div>
 
           <div style={styles.actionButtons}>
@@ -829,6 +1429,14 @@ const styles: Record<string, React.CSSProperties> = {
   buttonDisabled: {
     opacity: 0.5,
     cursor: "not-allowed"
+  },
+  addButton: {
+    backgroundColor: "#4caf50",
+    color: "white"
+  },
+  deleteButton: {
+    backgroundColor: "#f44336",
+    color: "white"
   },
   helpText: {
     marginTop: 20,

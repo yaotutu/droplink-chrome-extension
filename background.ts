@@ -13,7 +13,7 @@ import type {
 import { ConnectionStatus } from "~types"
 
 import { GotifyClient } from "./lib/gotify-client"
-import { OpenTabHandler, SmsNotificationHandler } from "./lib/handlers"
+import { NotificationHandler, OpenTabHandler } from "./lib/handlers"
 import { MessageRouter } from "./lib/message-router"
 import { getConfig, isConfigValid, onConfigChange } from "./lib/storage"
 
@@ -29,7 +29,7 @@ let statusInfo: StatusInfo = {
 // 创建消息路由器
 const router = new MessageRouter()
 router.register(new OpenTabHandler())
-router.register(new SmsNotificationHandler())
+router.register(new NotificationHandler())
 
 /**
  * 初始化扩展

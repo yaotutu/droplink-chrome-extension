@@ -3,14 +3,24 @@ import { useEffect, useState } from "react"
 import type { Config, RuntimeMessage, RuntimeResponse, StatusInfo } from "~types"
 
 import { ConnectionStatus } from "~types"
-import { getConfig, saveConfig } from "~lib/storage"
+import { getConfig } from "~lib/storage"
 
 function IndexPopup() {
   // 状态
   const [config, setConfig] = useState<Config>({
     gotifyUrl: "http://111.228.1.24:2345/",
     clientToken: "",
-    enabled: false
+    enabled: false,
+    features: {
+      openTab: true,
+      notification: false
+    },
+    openTabNotification: false,
+    notificationFilters: {
+      enabled: false,
+      filterOpenTab: false,
+      rules: []
+    }
   })
   const [status, setStatus] = useState<StatusInfo>({
     status: ConnectionStatus.DISCONNECTED,
@@ -55,25 +65,6 @@ function IndexPopup() {
     })
   }
 
-  // 处理启用/禁用切换
-  const handleToggleEnabled = async () => {
-    const newConfig = {
-      ...config,
-      enabled: !config.enabled
-    }
-
-    try {
-      await saveConfig(newConfig)
-      setConfig(newConfig)
-
-      // 重新加载状态
-      await loadData()
-    } catch (error) {
-      console.error("切换状态失败:", error)
-      alert("操作失败: " + error)
-    }
-  }
-
   // 打开设置页面
   const openSettings = () => {
     chrome.runtime.openOptionsPage()
@@ -109,6 +100,14 @@ function IndexPopup() {
       default:
         return "#9e9e9e"
     }
+  }
+
+  // 获取启用的功能列表
+  const getEnabledFeatures = () => {
+    const features: string[] = []
+    if (config.features.openTab) features.push("自动打开标签页")
+    if (config.features.notification) features.push("通知")
+    return features.length > 0 ? features.join("、") : "无"
   }
 
   if (loading) {
@@ -174,18 +173,21 @@ function IndexPopup() {
         )}
       </div>
 
-      {/* 启用开关 */}
-      <div style={styles.toggleCard}>
-        <label style={styles.toggleLabel}>
-          <input
-            type="checkbox"
-            checked={config.enabled}
-            onChange={handleToggleEnabled}
-            style={styles.checkbox}
-          />
-          <span>启用 Droplink</span>
-        </label>
-      </div>
+      {/* 功能状态 */}
+      {config.enabled && (
+        <div style={styles.statusCard}>
+          <div style={styles.statusHeader}>
+            <span style={styles.statusLabel}>启用功能</span>
+            <span style={styles.statusText}>
+              {config.enabled ? "已启用" : "已禁用"}
+            </span>
+          </div>
+          <div style={styles.infoRow}>
+            <span style={styles.infoLabel}>功能:</span>
+            <span style={styles.infoValue}>{getEnabledFeatures()}</span>
+          </div>
+        </div>
+      )}
 
       {/* 操作按钮 */}
       <button onClick={openSettings} style={styles.settingsButton}>
@@ -198,6 +200,15 @@ function IndexPopup() {
         <div style={styles.warningCard}>
           <span style={styles.warningIcon}>ℹ️</span>
           <span style={styles.warningText}>请先配置 Gotify 服务器</span>
+        </div>
+      )}
+
+      {!config.enabled && status.configValid && (
+        <div style={styles.warningCard}>
+          <span style={styles.warningIcon}>ℹ️</span>
+          <span style={styles.warningText}>
+            Droplink 已禁用，请在设置中启用
+          </span>
         </div>
       )}
     </div>
@@ -292,27 +303,6 @@ const styles: Record<string, React.CSSProperties> = {
   errorText: {
     color: "#c62828",
     flex: 1
-  },
-  toggleCard: {
-    backgroundColor: "#fff",
-    borderRadius: 8,
-    padding: 16,
-    marginBottom: 12,
-    boxShadow: "0 1px 3px rgba(0,0,0,0.1)"
-  },
-  toggleLabel: {
-    display: "flex",
-    alignItems: "center",
-    gap: 10,
-    fontSize: 14,
-    color: "#555",
-    cursor: "pointer",
-    fontWeight: "500"
-  },
-  checkbox: {
-    width: 18,
-    height: 18,
-    cursor: "pointer"
   },
   settingsButton: {
     width: "100%",

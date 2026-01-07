@@ -12,8 +12,13 @@ const DEFAULT_CONFIG: Config = {
   enabled: false,
   features: {
     openTab: true,
-    smsNotification: false,
-    copyToClipboard: false
+    notification: false
+  },
+  openTabNotification: false,
+  notificationFilters: {
+    enabled: false,
+    filterOpenTab: false,
+    rules: []
   }
 }
 
@@ -36,7 +41,9 @@ export async function getConfig(): Promise<Config> {
       gotifyUrl: config.gotifyUrl || DEFAULT_CONFIG.gotifyUrl,
       clientToken: config.clientToken || DEFAULT_CONFIG.clientToken,
       enabled: config.enabled ?? DEFAULT_CONFIG.enabled,
-      features: config.features || DEFAULT_CONFIG.features
+      features: config.features || DEFAULT_CONFIG.features,
+      openTabNotification: config.openTabNotification ?? DEFAULT_CONFIG.openTabNotification,
+      notificationFilters: config.notificationFilters ?? DEFAULT_CONFIG.notificationFilters
     }
   } catch (error) {
     console.error("[Storage] 读取配置失败:", error)

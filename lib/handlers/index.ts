@@ -4,4 +4,4 @@
 
 export { MessageHandler } from "./base-handler"
 export { OpenTabHandler } from "./openTab-handler"
-export { SmsNotificationHandler } from "./smsNotification-handler"
+export { NotificationHandler } from "./notification-handler"

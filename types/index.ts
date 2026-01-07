@@ -8,10 +8,37 @@
 export interface FeatureToggles {
   /** 打开标签页功能 */
   openTab: boolean
-  /** 短信通知功能 */
-  smsNotification: boolean
-  /** 复制到剪贴板功能（预留） */
-  copyToClipboard: boolean
+  /** 通知功能 */
+  notification: boolean
+}
+
+/**
+ * 通知规则类型
+ */
+export type NotificationRuleType = "include" | "exclude"
+
+/**
+ * 单个通知规则
+ */
+export interface NotificationRule {
+  /** 规则 ID */
+  id: string
+  /** 规则类型 */
+  type: NotificationRuleType
+  /** 关键词列表（OR 关系） */
+  keywords: string[]
+}
+
+/**
+ * 通知过滤规则配置
+ */
+export interface NotificationFilters {
+  /** 是否启用过滤（false = 展示所有消息） */
+  enabled: boolean
+  /** 是否过滤 openTab 消息 */
+  filterOpenTab: boolean
+  /** 规则列表（OR 关系：满足任一即展示） */
+  rules: NotificationRule[]
 }
 
 /**
@@ -26,6 +53,10 @@ export interface Config {
   enabled: boolean
   /** 功能开关配置 */
   features: FeatureToggles
+  /** 打开标签页时是否显示通知 */
+  openTabNotification: boolean
+  /** 通知过滤规则 */
+  notificationFilters: NotificationFilters
 }
 
 /**
@@ -56,7 +87,7 @@ export interface GotifyMessage {
 /**
  * Droplink 消息操作类型
  */
-export type DroplinkAction = "openTab" | "smsNotification" | "copyToClipboard"
+export type DroplinkAction = "openTab" | "notification"
 
 /**
  * 打开标签页消息
@@ -74,15 +105,15 @@ export interface OpenTabMessage {
 }
 
 /**
- * 短信通知消息
+ * 通知消息
  */
-export interface SmsNotificationMessage {
+export interface NotificationMessage {
   /** 操作类型 */
-  action: "smsNotification"
-  /** 短信内容 */
+  action: "notification"
+  /** 通知内容 */
   content: string
-  /** 发送者（可选） */
-  sender?: string
+  /** 标题（可选） */
+  title?: string
   /** 验证码（可选，自动提取） */
   verificationCode?: string
 }
@@ -90,7 +121,7 @@ export interface SmsNotificationMessage {
 /**
  * Droplink 消息联合类型
  */
-export type DroplinkMessage = OpenTabMessage | SmsNotificationMessage
+export type DroplinkMessage = OpenTabMessage | NotificationMessage
 
 /**
  * 连接状态
