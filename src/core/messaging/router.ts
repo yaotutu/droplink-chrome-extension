@@ -6,6 +6,7 @@ import type { Config, GotifyMessage } from "~/shared/types"
 
 import { MessageHandler } from "./handlers/base"
 import { MessageContext } from "./context"
+import { showInfo } from "~/core/notifications"
 
 export class MessageRouter {
   private handlers = new Map<string, MessageHandler<any>>()
@@ -38,6 +39,11 @@ export class MessageRouter {
     }
 
     try {
+      // 如果启用了"显示所有通知"，则显示通知
+      if (this.config.showAllNotifications) {
+        await showInfo(message.title, message.message)
+      }
+
       // 创建上下文并传递给 handlers
       const context = new MessageContext(this.config)
 

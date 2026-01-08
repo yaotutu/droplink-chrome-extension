@@ -12,6 +12,8 @@ export interface Config {
   clientToken: string
   /** 打开标签页时是否显示通知 */
   openTabNotification: boolean
+  /** 显示所有 Gotify 通知 */
+  showAllNotifications: boolean
 }
 
 /**

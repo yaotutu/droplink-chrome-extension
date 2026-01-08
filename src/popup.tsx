@@ -5,7 +5,6 @@
 import { useEffect } from "react"
 import { useStore } from "~/shared/store"
 import { StatusCard } from "~/pages/popup/components/StatusCard"
-import { FeatureInfo } from "~/pages/popup/components/FeatureInfo"
 import { WarningCard } from "~/pages/popup/components/WarningCard"
 import { APP_VERSION } from "~/shared/utils/constants"
 
@@ -47,11 +46,6 @@ function IndexPopup() {
       {/* 连接状态 */}
       <StatusCard status={status} serverUrl={config.gotifyUrl} />
 
-      {/* 功能信息 */}
-      {config.enabled && (
-        <FeatureInfo enabled={config.enabled} features={config.features} />
-      )}
-
       {/* 设置按钮 */}
       <button onClick={openSettings} style={styles.settingsButton}>
         <span style={styles.buttonIcon}>⚙️</span>
@@ -61,10 +55,6 @@ function IndexPopup() {
       {/* 警告提示 */}
       {!status.configValid && (
         <WarningCard message="请先配置 Gotify 服务器" />
-      )}
-
-      {!config.enabled && status.configValid && (
-        <WarningCard message="Droplink 已禁用，请在设置中启用" />
       )}
     </div>
   )

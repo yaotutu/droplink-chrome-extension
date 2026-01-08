@@ -13,10 +13,29 @@ export function FeatureToggles() {
     await updateField("openTabNotification", !config.openTabNotification)
   }
 
+  const handleToggleShowAllNotifications = async () => {
+    await updateField("showAllNotifications", !config.showAllNotifications)
+  }
+
   return (
     <div style={styles.card}>
       <h3 style={styles.title}>功能设置</h3>
 
+      {/* 显示所有通知 */}
+      <div style={styles.toggleRow}>
+        <div style={styles.toggleInfo}>
+          <div style={styles.toggleLabel}>显示所有通知</div>
+          <div style={styles.toggleDescription}>
+            作为 Gotify 客户端接收并显示所有消息通知
+          </div>
+        </div>
+        <Switch
+          checked={config.showAllNotifications}
+          onChange={handleToggleShowAllNotifications}
+        />
+      </div>
+
+      {/* 打开标签页时显示通知 */}
       <div style={styles.toggleRow}>
         <div style={styles.toggleInfo}>
           <div style={styles.toggleLabel}>打开标签页时显示通知</div>

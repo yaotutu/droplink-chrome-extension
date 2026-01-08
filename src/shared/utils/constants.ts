@@ -10,7 +10,8 @@ import type { Config } from "~/shared/types"
 export const DEFAULT_CONFIG: Config = {
   gotifyUrl: "http://111.228.1.24:2345/",
   clientToken: "",
-  openTabNotification: false
+  openTabNotification: false,
+  showAllNotifications: false
 }
 
 /**
