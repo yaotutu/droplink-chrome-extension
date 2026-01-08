@@ -59,58 +59,122 @@ pnpm package
 
 ```
 droplink-chrome-extension/
-├── assets/              # 静态资源（图标等）
-├── lib/                 # 核心功能模块
-│   ├── gotify-client.ts    # Gotify WebSocket 客户端
-│   ├── message-handler.ts  # 消息处理器
-│   ├── tab-manager.ts      # 标签页管理器
-│   └── storage.ts          # 配置存储管理
-├── types/               # TypeScript 类型定义
-│   └── index.ts
-├── background.ts        # 后台服务脚本（主逻辑入口）
-├── popup.tsx            # 弹出窗口 UI（配置界面）
-├── package.json         # 项目配置和依赖
-├── tsconfig.json        # TypeScript 配置
-├── CLAUDE.md            # 本文件
-├── DEBUG.md             # 调试指南
-└── README.md            # 项目说明
+├── src/                       # 所有源代码
+│   ├── background.ts          # 后台服务脚本入口
+│   ├── popup.tsx              # Popup 页面入口
+│   ├── options.tsx            # Options 页面入口
+│   │
+│   ├── background/            # 后台模块
+│   │   ├── connection-manager.ts      # 连接管理器
+│   │   └── runtime-message-handler.ts # Runtime 消息处理
+│   │
+│   ├── pages/                 # 页面组件
+│   │   ├── popup/
+│   │   │   ├── components/    # StatusCard, FeatureInfo, WarningCard
+│   │   │   └── hooks/         # usePopupState
+│   │   └── options/
+│   │       ├── components/    # LoginForm, ConfigCard, FeatureToggles 等
+│   │       └── hooks/         # useOptionsState, useLoginForm 等
+│   │
+│   ├── shared/                # 共享代码
+│   │   ├── components/        # 通用组件
+│   │   ├── hooks/             # useConfig, useStatus, useRuntimeMessage
+│   │   ├── utils/
+│   │   │   └── constants.ts   # DEFAULT_CONFIG 等常量
+│   │   └── types/
+│   │       └── index.ts       # TypeScript 类型定义
+│   │
+│   └── core/                  # 核心业务逻辑
+│       ├── gotify/
+│       │   ├── client.ts      # WebSocket 客户端
+│       │   └── auth.ts        # 认证逻辑
+│       ├── messaging/
+│       │   ├── router.ts      # 消息路由
+│       │   ├── context.ts     # 依赖注入容器
+│       │   └── handlers/      # openTab, notification
+│       ├── storage/           # 配置存储
+│       ├── tabs/              # 标签页管理
+│       └── notifications/     # 通知管理
+│
+├── assets/                    # 静态资源
+├── package.json               # 项目配置（含 Plasmo srcDir）
+├── tsconfig.json              # TypeScript 配置（含路径别名）
+├── CLAUDE.md                  # 本文件
+├── DEBUG.md                   # 调试指南
+└── README.md                  # 项目说明
 ```
 
 ### 核心模块说明
 
-#### 1. background.ts - 后台服务脚本
+#### 1. src/background.ts - 后台服务脚本入口
 - 扩展的主入口，协调所有模块
-- 初始化 Gotify 客户端
+- 初始化消息路由器和连接管理器
 - 监听配置变化并自动重连
-- 处理 popup 和 background 之间的消息通信
+- 处理 popup/options 与 background 之间的消息通信
 
-#### 2. lib/gotify-client.ts - Gotify WebSocket 客户端
+#### 2. src/core/gotify/client.ts - Gotify WebSocket 客户端
 - 建立和维护 WebSocket 连接
 - 自动重连机制（1s → 2s → 4s → ... → 最大 60s）
 - 接收和解析 Gotify 消息
 - 连接状态管理
 
-#### 3. lib/message-handler.ts - 消息处理器
-- 验证消息格式（检查 extras.droplink 字段）
-- 提取 URL 和配置选项
-- 调用标签页管理器打开 URL
-- 详细的日志输出用于调试
+#### 3. src/core/messaging/ - 消息处理系统
+- **router.ts**: 消息路由，分发给对应的 handler
+- **context.ts**: 依赖注入容器（MessageContext），解耦 handlers 与 storage
+- **handlers/**: 各种消息处理器（openTab, notification）
+- 使用依赖注入模式，handlers 通过 context 获取配置
 
-#### 4. lib/tab-manager.ts - 标签页管理器
-- 使用 Chrome Tabs API 创建标签页
-- 自动激活标签页（切换到前台）
-- 显示错误通知
+#### 4. src/background/ - 后台管理模块
+- **connection-manager.ts**: 管理 Gotify 连接和状态
+- **runtime-message-handler.ts**: 处理来自 UI 的 runtime 消息
 
-#### 5. lib/storage.ts - 配置存储管理
+#### 5. src/shared/hooks/ - 共享 React Hooks
+- **useConfig**: 配置管理（读取、保存、更新）
+- **useStatus**: 状态管理（连接状态等）
+- **useRuntimeMessage**: Runtime 消息通信
+- 消除了 popup 和 options 中的代码重复
+
+#### 6. src/pages/ - UI 页面组件
+- **popup/**: Popup 页面（状态展示）
+- **options/**: Options 页面（登录、配置、功能开关）
+- 采用组件化设计，单一职责原则
+- 每个页面有自己的 components 和 hooks
+
+#### 7. src/core/storage/ - 配置存储管理
 - 使用 chrome.storage.sync API 存储配置
 - 配置验证（URL 和 Token 格式）
 - 监听配置变化
 
-#### 6. popup.tsx - 弹出窗口 UI
-- 配置表单（服务器地址、Token）
-- 启用/禁用开关
-- 连接状态显示
-- 测试连接功能
+#### 8. src/core/tabs/ 和 src/core/notifications/
+- **tabs/**: 使用 Chrome Tabs API 创建和管理标签页
+- **notifications/**: 显示浏览器通知
+
+#### 9. src/shared/utils/constants.ts - 常量定义
+- DEFAULT_CONFIG: 配置默认值（单一数据源）
+- APP_NAME, APP_VERSION 等应用常量
+
+#### 10. src/popup.tsx 和 src/options.tsx
+- **popup.tsx**: Popup 页面入口（约100行）
+- **options.tsx**: Options 页面入口（约120行）
+- 通过 Plasmo 的 srcDir 配置识别为入口文件
+
+## 架构特点
+
+### 依赖注入模式
+- 使用 `MessageContext` 作为依赖注入容器
+- Handlers 通过 context 参数接收配置，不直接调用 storage
+- 解耦了消息处理器与配置存储的依赖关系
+
+### 代码复用
+- `DEFAULT_CONFIG` 定义在单一位置（src/shared/utils/constants.ts）
+- 共享 Hooks（useConfig, useStatus, useRuntimeMessage）消除重复
+- 组件化设计，便于维护和测试
+
+### 目录分层
+- **src/core/**: 核心业务逻辑（无UI依赖）
+- **src/shared/**: 跨页面共享代码（hooks, types, utils）
+- **src/pages/**: UI页面组件（popup, options）
+- **src/background/**: 后台服务模块
 
 ### 技术栈
 

@@ -12,6 +12,18 @@
     "paths": {
       "~*": [
         "./*"
+      ],
+      "~/shared/*": [
+        "./src/shared/*"
+      ],
+      "~/core/*": [
+        "./src/core/*"
+      ],
+      "~/pages/*": [
+        "./src/pages/*"
+      ],
+      "~/background/*": [
+        "./src/background/*"
       ]
     },
     "baseUrl": "."

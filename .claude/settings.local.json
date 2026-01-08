@@ -3,7 +3,16 @@
     "allow": [
       "WebSearch",
       "Bash(pkill:*)",
-      "Bash(pnpm dev)"
+      "Bash(pnpm dev)",
+      "Bash(pnpm dev --verbose)",
+      "Bash(npx tsc:*)",
+      "Bash(tree:*)",
+      "Bash(find:*)",
+      "Bash(sort:*)",
+      "Bash(grep:*)",
+      "Bash(pnpm tsc:*)",
+      "Bash(pnpm build:*)",
+      "Bash(pnpm add:*)"
     ]
   }
 }
