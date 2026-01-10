@@ -42,43 +42,45 @@ export interface GotifyMessage {
 }
 
 /**
- * Droplink 消息操作类型
+ * Droplink Action 定义
  */
-export type DroplinkAction = "openTab" | "notification"
-
-/**
- * 打开标签页消息
- */
-export interface OpenTabMessage {
-  /** 操作类型 */
-  action: "openTab"
-  /** 要打开的 URL */
-  url: string
-  /** 可选配置 */
-  options?: {
+export interface DroplinkAction {
+  /** 操作类型，目前只处理 "openTab" */
+  type: string
+  /** 操作参数 */
+  params?: {
     /** 是否激活标签页，默认 true */
     activate?: boolean
+    [key: string]: any
   }
 }
 
 /**
- * 通知消息
+ * Droplink 消息（新格式）
  */
-export interface NotificationMessage {
-  /** 操作类型 */
-  action: "notification"
-  /** 通知内容 */
-  content: string
-  /** 标题（可选） */
-  title?: string
-  /** 验证码（可选，自动提取） */
-  verificationCode?: string
+export interface DroplinkMessage {
+  /** 消息唯一标识 */
+  id?: string
+  /** 时间戳 */
+  timestamp?: number
+  /** 发送者 */
+  sender?: string
+  /** 内容 */
+  content: {
+    /** 内容类型，当前只支持 "url" */
+    type: "url"
+    /** 内容值（URL） */
+    value: string
+  }
+  /** 操作列表 */
+  actions: DroplinkAction[]
+  /** 元数据 */
+  metadata?: {
+    /** 标签 */
+    tags?: string[]
+    [key: string]: any
+  }
 }
-
-/**
- * Droplink 消息联合类型
- */
-export type DroplinkMessage = OpenTabMessage | NotificationMessage
 
 /**
  * 连接状态
@@ -137,55 +139,13 @@ export interface StatusInfo {
 }
 
 /**
- * Gotify 客户端响应
- */
-export interface GotifyClient {
-  /** 客户端 ID */
-  id: number
-  /** 客户端 Token */
-  token: string
-  /** 客户端名称 */
-  name: string
-  /** 最后使用时间 */
-  lastUsed?: string
-}
-
-/**
- * 创建客户端请求参数
- */
-export interface CreateClientParams {
-  /** 客户端名称 */
-  name: string
-}
-
-/**
- * 认证凭证（仅用于临时传递，不存储）
- */
-export interface Credentials {
-  /** 用户名 */
-  username: string
-  /** 密码 */
-  password: string
-}
-
-/**
- * 登录方式
- */
-export enum LoginMode {
-  /** 账号密码登录 */
-  CREDENTIALS = "credentials",
-  /** Token 登录 */
-  TOKEN = "token"
-}
-
-/**
  * 钩子上下文
  */
 export interface HookContext {
   /** Gotify 原始消息 */
   message: GotifyMessage
-  /** 消息动作类型 */
-  action: DroplinkAction
+  /** 消息动作类型（如 "openTab"） */
+  action: string
   /** 是否已被取消（pre-process 钩子可设置） */
   cancelled?: boolean
   /** 处理结果（post-process 钩子可用） */

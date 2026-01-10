@@ -5,10 +5,20 @@
 import type { Config } from "~/shared/types"
 
 /**
+ * 认证服务器地址（固定）
+ */
+export const AUTH_SERVER_URL = "http://192.168.123.100:3600"
+
+/**
+ * Gotify 服务器地址（固定）
+ */
+export const GOTIFY_SERVER_URL = "http://111.228.1.24:2345"
+
+/**
  * 默认配置（唯一定义处）
  */
 export const DEFAULT_CONFIG: Config = {
-  gotifyUrl: "http://111.228.1.24:2345/",
+  gotifyUrl: GOTIFY_SERVER_URL,
   clientToken: "",
   openTabNotification: false,
   showAllNotifications: false

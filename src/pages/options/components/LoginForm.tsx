@@ -4,10 +4,10 @@
 
 import { useState } from "react"
 import { useStore } from "~/shared/store"
-import { CredentialsForm } from "./CredentialsForm"
+import { EmailCodeForm } from "./EmailCodeForm"
 import { TokenForm } from "./TokenForm"
 
-export type LoginMode = "credentials" | "token"
+export type LoginMode = "email_code" | "token"
 
 interface LoginFormProps {
   onLoginSuccess?: () => void
@@ -19,24 +19,24 @@ export function LoginForm({ onLoginSuccess }: LoginFormProps) {
   const updateField = useStore((state) => state.updateField)
 
   // 本地 UI 状态
-  const [loginMode, setLoginMode] = useState<LoginMode>("credentials")
+  const [loginMode, setLoginMode] = useState<LoginMode>("email_code")
 
   return (
     <div style={styles.container}>
       <h2 style={styles.title}>登录 Droplink</h2>
       <p style={styles.description}>
-        使用 Gotify 账号或客户端 Token 登录
+        使用邮箱验证码或客户端 Token 登录
       </p>
 
       {/* 登录模式切换 */}
       <div style={styles.tabs}>
         <button
-          onClick={() => setLoginMode("credentials")}
+          onClick={() => setLoginMode("email_code")}
           style={{
             ...styles.tab,
-            ...(loginMode === "credentials" ? styles.tabActive : {})
+            ...(loginMode === "email_code" ? styles.tabActive : {})
           }}>
-          账号密码登录
+          邮箱验证码登录
         </button>
         <button
           onClick={() => setLoginMode("token")}
@@ -50,8 +50,8 @@ export function LoginForm({ onLoginSuccess }: LoginFormProps) {
 
       {/* 表单内容 */}
       <div style={styles.formContainer}>
-        {loginMode === "credentials" ? (
-          <CredentialsForm onLoginSuccess={onLoginSuccess} />
+        {loginMode === "email_code" ? (
+          <EmailCodeForm onLoginSuccess={onLoginSuccess} />
         ) : (
           <TokenForm onLoginSuccess={onLoginSuccess} />
         )}

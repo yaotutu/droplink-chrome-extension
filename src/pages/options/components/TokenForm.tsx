@@ -36,8 +36,7 @@ export function TokenForm({ onLoginSuccess }: TokenFormProps) {
     try {
       const newConfig: Config = {
         ...config,
-        clientToken: token,
-        enabled: true
+        clientToken: token
       }
 
       // 测试连接
@@ -67,20 +66,6 @@ export function TokenForm({ onLoginSuccess }: TokenFormProps) {
     <form onSubmit={handleSubmit} style={styles.form}>
       <div style={styles.formGroup}>
         <label style={styles.label}>
-          Gotify 服务器地址 <span style={styles.required}>*</span>
-        </label>
-        <input
-          type="text"
-          value={config.gotifyUrl}
-          onChange={(e) => updateField("gotifyUrl", e.target.value)}
-          placeholder="http://example.com:2345"
-          style={styles.input}
-          disabled={saving}
-        />
-      </div>
-
-      <div style={styles.formGroup}>
-        <label style={styles.label}>
           客户端 Token <span style={styles.required}>*</span>
         </label>
         <div style={styles.tokenContainer}>
@@ -107,7 +92,7 @@ export function TokenForm({ onLoginSuccess }: TokenFormProps) {
       </button>
 
       <div style={styles.hint}>
-        在 Gotify 设置中创建客户端，复制客户端 Token 粘贴到此处
+        如果您已有客户端 Token，可以直接输入进行登录
       </div>
     </form>
   )

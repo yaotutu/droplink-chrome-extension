@@ -24,10 +24,10 @@ export async function getConfig(): Promise<Config> {
     return {
       gotifyUrl: config.gotifyUrl || DEFAULT_CONFIG.gotifyUrl,
       clientToken: config.clientToken || DEFAULT_CONFIG.clientToken,
-      enabled: config.enabled ?? DEFAULT_CONFIG.enabled,
-      features: config.features || DEFAULT_CONFIG.features,
-      openTabNotification: config.openTabNotification ?? DEFAULT_CONFIG.openTabNotification,
-      notificationFilters: config.notificationFilters ?? DEFAULT_CONFIG.notificationFilters
+      openTabNotification:
+        config.openTabNotification ?? DEFAULT_CONFIG.openTabNotification,
+      showAllNotifications:
+        config.showAllNotifications ?? DEFAULT_CONFIG.showAllNotifications
     }
   } catch (error) {
     console.error("[Storage] 读取配置失败:", error)

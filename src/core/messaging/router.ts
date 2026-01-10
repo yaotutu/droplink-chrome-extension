@@ -33,6 +33,16 @@ export class MessageRouter {
   async route(message: GotifyMessage) {
     console.log(`[Router] 收到消息 - App: ${message.appid}, Title: ${message.title}`)
 
+    // 调试：打印完整的消息内容
+    console.log("[Router] 完整消息内容:", JSON.stringify(message, null, 2))
+
+    // 调试：特别打印 droplink 字段
+    if (message.extras?.droplink) {
+      console.log("[Router] Droplink 字段:", JSON.stringify(message.extras.droplink, null, 2))
+    } else {
+      console.log("[Router] ⚠️ 消息不包含 droplink 字段")
+    }
+
     if (!this.config) {
       console.warn("[Router] 配置未设置，忽略消息")
       return

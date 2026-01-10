@@ -1,7 +1,8 @@
 /**
  * OpenTab 处理器 - 打开标签页
  *
- * 使用依赖注入获取配置，避免直接耦合 storage 模块
+ * 支持新格式的 Droplink 消息，从 content.value 提取 URL
+ * 遍历 actions 数组，处理所有 type === "openTab" 的操作
  */
 
 import type { GotifyMessage } from "~/shared/types"
@@ -14,45 +15,59 @@ export class OpenTabHandler extends MessageHandler<GotifyMessage> {
   readonly action = "openTab" as const
 
   validate(message: GotifyMessage): message is GotifyMessage {
-    // 检查是否有 droplink.action='openTab'
     const droplink = message.extras?.droplink
-    return (
-      droplink?.action === "openTab" &&
-      typeof droplink.url === "string" &&
-      (droplink.url.startsWith("http://") || droplink.url.startsWith("https://"))
+    if (!droplink) return false
+
+    // 检查是否有 openTab action
+    const hasOpenTabAction = droplink.actions?.some(
+      (action: any) => action.type === "openTab"
     )
+
+    // 检查 content 是否为有效的 URL
+    const hasValidUrl =
+      droplink.content?.type === "url" &&
+      typeof droplink.content.value === "string" &&
+      (droplink.content.value.startsWith("http://") ||
+        droplink.content.value.startsWith("https://"))
+
+    return hasOpenTabAction && hasValidUrl
   }
 
   async handle(message: GotifyMessage, context: MessageContext): Promise<void> {
-    // 从 context 获取配置
     const { config } = context
-
     const droplink = message.extras?.droplink
-    if (!droplink || droplink.action !== "openTab") {
-      return
-    }
+    if (!droplink) return
 
-    const { url, options } = droplink
-    const activate = options?.activate ?? true
+    const url = droplink.content?.value
+    if (!url) return
 
-    console.log(`[OpenTabHandler] 打开标签页: ${url} (激活: ${activate})`)
+    // 找到所有 openTab actions
+    const openTabActions =
+      droplink.actions?.filter((action: any) => action.type === "openTab") ||
+      []
 
-    try {
-      await chrome.tabs.create({ url, active: activate })
+    // 处理每个 openTab action
+    for (const action of openTabActions) {
+      // 提取 activate 选项（优先级：action.params > 默认值）
+      const activate = action.params?.activate ?? true
 
-      // 根据配置决定是否显示成功通知
-      if (config.openTabNotification) {
-        await showSuccess("链接已打开", url)
+      console.log(`[OpenTabHandler] 打开标签页: ${url} (激活: ${activate})`)
+
+      try {
+        await chrome.tabs.create({ url, active: activate })
+
+        if (config.openTabNotification) {
+          await showSuccess("链接已打开", url)
+        }
+      } catch (error) {
+        console.error("[OpenTabHandler] 打开失败:", error)
+
+        if (config.openTabNotification) {
+          await showError("无法打开链接", url)
+        }
+
+        throw error
       }
-    } catch (error) {
-      console.error("[OpenTabHandler] 打开失败:", error)
-
-      // 错误通知也应该受配置控制
-      if (config.openTabNotification) {
-        await showError("无法打开链接", url)
-      }
-
-      throw error
     }
   }
 }

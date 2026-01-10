@@ -31,16 +31,6 @@ export function ConfigCard({ config, onLogout }: ConfigCardProps) {
             {config.clientToken.slice(-4)}
           </span>
         </div>
-        <div style={styles.infoRow}>
-          <span style={styles.label}>状态:</span>
-          <span
-            style={{
-              ...styles.value,
-              color: config.enabled ? "#4caf50" : "#999"
-            }}>
-            {config.enabled ? "已启用" : "已禁用"}
-          </span>
-        </div>
       </div>
     </div>
   )
