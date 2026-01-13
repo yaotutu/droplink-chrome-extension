@@ -45,8 +45,8 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
-      # 7. 生成自动版本号
-      - name: Generate version
+      # 7. 生成版本标识（用于文件名）
+      - name: Generate version tag
         id: version
         run: |
           # 读取 package.json 的基础版本号
@@ -55,23 +55,22 @@ jobs:
           SHORT_SHA=$(echo ${{ github.sha }} | cut -c1-7)
           BUILD_NUM="${{ github.run_number }}"
 
-          # 根据分支生成不同的版本号
+          # 根据分支生成不同的版本标识（仅用于文件名）
           if [ "$BRANCH" == "dev" ]; then
             # dev 分支: 0.0.1-dev.123
-            VERSION="${BASE_VERSION}-dev.${BUILD_NUM}"
+            VERSION_TAG="${BASE_VERSION}-dev.${BUILD_NUM}"
           elif [ "$BRANCH" == "main" ]; then
             # main 分支: 0.0.1-abc1234
-            VERSION="${BASE_VERSION}-${SHORT_SHA}"
+            VERSION_TAG="${BASE_VERSION}-${SHORT_SHA}"
           else
             # 其他分支: 0.0.1-branch-abc1234
-            VERSION="${BASE_VERSION}-${BRANCH}-${SHORT_SHA}"
+            VERSION_TAG="${BASE_VERSION}-${BRANCH}-${SHORT_SHA}"
           fi
 
-          echo "version=$VERSION" >> $GITHUB_OUTPUT
-          echo "📦 Build version: $VERSION"
-
-          # 更新 package.json 的版本号（不创建 git tag）
-          npm version $VERSION --no-git-tag-version
+          echo "version_tag=$VERSION_TAG" >> $GITHUB_OUTPUT
+          echo "base_version=$BASE_VERSION" >> $GITHUB_OUTPUT
+          echo "📦 Base version: $BASE_VERSION"
+          echo "📦 Version tag: $VERSION_TAG"
 
       # 8. 构建扩展
       - name: Build extension
@@ -81,16 +80,16 @@ jobs:
       - name: Package extension
         run: pnpm package
 
-      # 10. 重命名 zip 文件，包含版本号
+      # 10. 重命名 zip 文件，包含版本标识
       - name: Rename package
         run: |
-          VERSION="${{ steps.version.outputs.version }}"
-          mv build/chrome-mv3-prod.zip build/droplink-${VERSION}.zip
+          VERSION_TAG="${{ steps.version.outputs.version_tag }}"
+          mv build/chrome-mv3-prod.zip build/droplink-${VERSION_TAG}.zip
 
       # 11. 上传构建产物
       - name: Upload build artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: droplink-${{ steps.version.outputs.version }}
-          path: build/droplink-${{ steps.version.outputs.version }}.zip
+          name: droplink-${{ steps.version.outputs.version_tag }}
+          path: build/droplink-${{ steps.version.outputs.version_tag }}.zip
           retention-days: 30
