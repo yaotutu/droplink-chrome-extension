@@ -5,6 +5,7 @@
 
 import type { Config } from "~/shared/types"
 import { DEFAULT_CONFIG } from "~/shared/utils/constants"
+import { isValidGotifyUrl, isValidToken } from "~/shared/utils/validators"
 
 /** Storage key */
 const STORAGE_KEY = "droplink_config"
@@ -54,26 +55,7 @@ export async function saveConfig(config: Config): Promise<void> {
  * 验证配置是否有效
  */
 export function isConfigValid(config: Config): boolean {
-  // 检查 URL 是否有效
-  if (!config.gotifyUrl || config.gotifyUrl.trim() === "") {
-    return false
-  }
-
-  try {
-    const url = new URL(config.gotifyUrl)
-    if (url.protocol !== "http:" && url.protocol !== "https:") {
-      return false
-    }
-  } catch {
-    return false
-  }
-
-  // 检查 Token 是否有效
-  if (!config.clientToken || config.clientToken.trim() === "") {
-    return false
-  }
-
-  return true
+  return isValidGotifyUrl(config.gotifyUrl) && isValidToken(config.clientToken)
 }
 
 /**
@@ -84,15 +66,11 @@ export function validateUrl(url: string): { valid: boolean; error?: string } {
     return { valid: false, error: "URL 不能为空" }
   }
 
-  try {
-    const urlObj = new URL(url)
-    if (urlObj.protocol !== "http:" && urlObj.protocol !== "https:") {
-      return { valid: false, error: "URL 必须以 http:// 或 https:// 开头" }
-    }
-    return { valid: true }
-  } catch {
-    return { valid: false, error: "URL 格式无效" }
+  if (!isValidGotifyUrl(url)) {
+    return { valid: false, error: "URL 格式无效或不是 HTTP(S) URL" }
   }
+
+  return { valid: true }
 }
 
 /**
@@ -106,9 +84,8 @@ export function validateToken(token: string): {
     return { valid: false, error: "Token 不能为空" }
   }
 
-  // Gotify token 通常是字母数字组合
-  if (token.length < 10) {
-    return { valid: false, error: "Token 长度太短" }
+  if (!isValidToken(token)) {
+    return { valid: false, error: "Token 长度太短（至少 10 个字符）" }
   }
 
   return { valid: true }
@@ -122,10 +99,13 @@ export function onConfigChange(
 ): void {
   chrome.storage.onChanged.addListener((changes, areaName) => {
     if (areaName === "sync" && changes[STORAGE_KEY]) {
-      const oldConfig = changes[STORAGE_KEY].oldValue as Config | undefined
+      const oldConfig =
+        (changes[STORAGE_KEY].oldValue as Config | undefined) || {
+          ...DEFAULT_CONFIG
+        }
       const newConfig = changes[STORAGE_KEY].newValue as Config | undefined
 
-      if (oldConfig && newConfig) {
+      if (newConfig) {
         callback(newConfig, oldConfig)
       }
     }

@@ -15,7 +15,9 @@
       "Bash(pnpm add:*)",
       "WebFetch(domain:localhost)",
       "WebFetch(domain:192.168.123.100)",
-      "Bash(curl:*)"
+      "Bash(curl:*)",
+      "Bash(npm run build)",
+      "Bash(npm run build:*)"
     ]
   }
 }

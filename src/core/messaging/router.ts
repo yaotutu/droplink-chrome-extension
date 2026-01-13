@@ -50,8 +50,14 @@ export class MessageRouter {
 
     try {
       // 如果启用了"显示所有通知"，则显示通知
+      // 通知失败不应中断消息处理
       if (this.config.showAllNotifications) {
-        await showInfo(message.title, message.message)
+        try {
+          await showInfo(message.title, message.message)
+        } catch (error) {
+          console.error("[Router] 显示通知失败:", error)
+          // 继续处理消息，不中断
+        }
       }
 
       // 创建上下文并传递给 handlers
@@ -64,10 +70,11 @@ export class MessageRouter {
           await handler.handle(message, context)
         } catch (error) {
           console.error(`[Router] Handler ${handler.action} 执行失败:`, error)
+          // 继续处理其他 handlers，不中断
         }
       }
     } catch (error) {
-      console.error("[Router] 路由发生错误:", error)
+      console.error("[Router] 路由发生未预期错误:", error)
     }
   }
 }

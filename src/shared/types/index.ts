@@ -92,6 +92,8 @@ export enum ConnectionStatus {
   CONNECTING = "connecting",
   /** 已连接 */
   CONNECTED = "connected",
+  /** 重连中 */
+  RECONNECTING = "reconnecting",
   /** 连接失败 */
   ERROR = "error"
 }

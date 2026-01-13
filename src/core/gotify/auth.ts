@@ -3,6 +3,7 @@
  */
 
 import { AUTH_SERVER_URL } from "~/shared/utils/constants"
+import { fetchWithTimeout as fetchWithTimeoutUtil } from "~/shared/utils/timeout"
 
 /**
  * 请求超时时间（10秒）
@@ -10,28 +11,16 @@ import { AUTH_SERVER_URL } from "~/shared/utils/constants"
 const TIMEOUT = 10000
 
 /**
- * 带超时的 fetch 请求
+ * 带超时和 CORS 错误处理的 fetch 请求
  */
 async function fetchWithTimeout(
   url: string,
   options: RequestInit,
   timeout: number = TIMEOUT
 ): Promise<Response> {
-  const controller = new AbortController()
-  const id = setTimeout(() => controller.abort(), timeout)
-
   try {
-    const response = await fetch(url, {
-      ...options,
-      signal: controller.signal
-    })
-    clearTimeout(id)
-    return response
+    return await fetchWithTimeoutUtil(url, options, timeout)
   } catch (error: any) {
-    clearTimeout(id)
-    if (error.name === "AbortError") {
-      throw new Error("请求超时，请检查网络连接")
-    }
     // CORS 错误检测
     if (error instanceof TypeError && error.message === "Failed to fetch") {
       throw new Error(

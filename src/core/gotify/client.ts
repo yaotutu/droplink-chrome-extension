@@ -6,6 +6,7 @@
 import type { Config, GotifyMessage } from "~/shared/types"
 
 import { ConnectionStatus } from "~/shared/types"
+import { showWarning } from "~/core/notifications"
 
 /**
  * Gotify WebSocket 客户端类
@@ -26,6 +27,12 @@ export class GotifyClient {
    * @param config Gotify 配置
    */
   async connect(config: Config): Promise<void> {
+    // 清除旧的重连定时器，防止多个定时器同时运行
+    if (this.reconnectTimer) {
+      clearTimeout(this.reconnectTimer)
+      this.reconnectTimer = null
+    }
+
     // 如果已经连接，先断开
     if (this.ws) {
       this.disconnect()
@@ -75,6 +82,10 @@ export class GotifyClient {
       this.ws = null
     }
 
+    // 清空所有处理器，防止内存泄漏
+    this.messageHandlers = []
+    this.statusHandlers = []
+
     this.setStatus(ConnectionStatus.DISCONNECTED)
     this.reconnectAttempts = 0
   }
@@ -87,10 +98,30 @@ export class GotifyClient {
   }
 
   /**
+   * 移除消息处理器
+   */
+  offMessage(handler: (message: GotifyMessage) => void): void {
+    const index = this.messageHandlers.indexOf(handler)
+    if (index > -1) {
+      this.messageHandlers.splice(index, 1)
+    }
+  }
+
+  /**
    * 注册状态变化处理器
    */
   onStatusChange(handler: (status: ConnectionStatus) => void): void {
     this.statusHandlers.push(handler)
+  }
+
+  /**
+   * 移除状态变化处理器
+   */
+  offStatusChange(handler: (status: ConnectionStatus) => void): void {
+    const index = this.statusHandlers.indexOf(handler)
+    if (index > -1) {
+      this.statusHandlers.splice(index, 1)
+    }
   }
 
   /**
@@ -229,24 +260,12 @@ export class GotifyClient {
   /**
    * 显示重连通知
    */
-  private async showReconnectNotification(seconds: number): Promise<void> {
-    try {
-      const notificationId = `droplink_reconnect_${Date.now()}`
-
-      await chrome.notifications.create(notificationId, {
-        type: "basic",
-        iconUrl: chrome.runtime.getURL("assets/icon.png"),
-        title: "Droplink 连接失败",
-        message: `连接失败，将在 ${seconds} 秒后重试`,
-        priority: 1
-      })
-
-      // 5 秒后自动清除通知
-      setTimeout(() => {
-        chrome.notifications.clear(notificationId)
-      }, 5000)
-    } catch (error) {
-      console.error("[GotifyClient] 显示通知失败:", error)
-    }
+  private showReconnectNotification(seconds: number): void {
+    showWarning(
+      "Droplink 连接断开",
+      `将在 ${seconds} 秒后尝试重新连接`
+    ).catch((error) => {
+      console.error("[GotifyClient] 显示重连通知失败:", error)
+    })
   }
 }

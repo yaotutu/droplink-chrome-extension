@@ -75,32 +75,32 @@ export class RuntimeMessageHandler {
     }
 
     const testClient = new GotifyClient()
-    let testSuccess = false
+    let resolved = false // 防止多次 resolve
 
-    return new Promise((resolve) => {
-      const timeoutId = setTimeout(() => {
-        if (!testSuccess) {
+    return new Promise((resolveFunc) => {
+      // 包装 resolve 函数，确保只调用一次
+      const resolve = (value: RuntimeResponse) => {
+        if (!resolved) {
+          resolved = true
+          clearTimeout(timeoutId)
           testClient.disconnect()
-          resolve({ success: false, error: "连接超时" })
+          resolveFunc(value)
         }
+      }
+
+      const timeoutId = setTimeout(() => {
+        resolve({ success: false, error: "连接超时" })
       }, 10000)
 
       testClient.onStatusChange((status) => {
         if (status === ConnectionStatus.CONNECTED) {
-          testSuccess = true
-          clearTimeout(timeoutId)
-          testClient.disconnect()
           resolve({ success: true, data: { connected: true } })
         } else if (status === ConnectionStatus.ERROR) {
-          clearTimeout(timeoutId)
-          testClient.disconnect()
           resolve({ success: false, error: "连接失败" })
         }
       })
 
       testClient.connect(config).catch((error) => {
-        clearTimeout(timeoutId)
-        testClient.disconnect()
         resolve({ success: false, error: String(error) })
       })
     })
@@ -112,8 +112,8 @@ export class RuntimeMessageHandler {
   private async handleReconnect(): Promise<RuntimeResponse> {
     try {
       const config = await getConfig()
-      if (!isConfigValid(config) || !config.enabled) {
-        return { success: false, error: "配置无效或未启用" }
+      if (!isConfigValid(config)) {
+        return { success: false, error: "配置无效" }
       }
 
       await this.connectionManager.connect(config)

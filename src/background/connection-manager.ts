@@ -7,6 +7,7 @@ import type { Config, StatusInfo } from "~/shared/types"
 import { ConnectionStatus } from "~/shared/types"
 import { GotifyClient } from "~/core/gotify/client"
 import { MessageRouter } from "~/core/messaging/router"
+import { IconManager } from "./icon-manager"
 
 export class ConnectionManager {
   private client: GotifyClient | null = null
@@ -14,8 +15,13 @@ export class ConnectionManager {
     status: ConnectionStatus.DISCONNECTED,
     configValid: false
   }
+  private iconManager: IconManager
 
-  constructor(private router: MessageRouter) {}
+  constructor(private router: MessageRouter) {
+    this.iconManager = new IconManager()
+    // 初始化时更新图标
+    this.updateIcon()
+  }
 
   /**
    * 连接到 Gotify 服务器
@@ -23,7 +29,9 @@ export class ConnectionManager {
   async connect(config: Config): Promise<void> {
     // 如果已存在连接，先断开
     if (this.client) {
+      console.log("[ConnectionManager] 断开旧连接")
       this.client.disconnect()
+      this.client = null // 显式释放引用，确保旧客户端被垃圾回收
     }
 
     this.client = new GotifyClient()
@@ -44,6 +52,8 @@ export class ConnectionManager {
       } else if (status === ConnectionStatus.ERROR) {
         this.statusInfo.error = "连接失败"
       }
+      // 状态变化时更新图标
+      this.updateIcon()
     })
 
     // 建立连接
@@ -60,6 +70,7 @@ export class ConnectionManager {
       this.client = null
     }
     this.statusInfo.status = ConnectionStatus.DISCONNECTED
+    this.updateIcon()
   }
 
   /**
@@ -74,6 +85,7 @@ export class ConnectionManager {
    */
   updateConfigValidity(valid: boolean): void {
     this.statusInfo.configValid = valid
+    this.updateIcon()
   }
 
   /**
@@ -81,5 +93,12 @@ export class ConnectionManager {
    */
   isConnected(): boolean {
     return this.client?.isConnected() ?? false
+  }
+
+  /**
+   * 更新图标徽章
+   */
+  private updateIcon(): void {
+    this.iconManager.updateIcon(this.statusInfo.status, this.statusInfo.configValid)
   }
 }

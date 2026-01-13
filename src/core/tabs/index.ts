@@ -3,6 +3,8 @@
  * 负责创建和激活标签页
  */
 
+import { isValidUrl } from "~/shared/utils/validators"
+
 /**
  * 打开新标签页
  * @param url 要打开的 URL
@@ -36,43 +38,3 @@ export async function openTab(
   }
 }
 
-/**
- * 验证 URL 是否有效
- */
-function isValidUrl(url: string): boolean {
-  try {
-    const urlObj = new URL(url)
-    return urlObj.protocol === "http:" || urlObj.protocol === "https:"
-  } catch {
-    return false
-  }
-}
-
-/**
- * 显示错误通知
- * @param message 错误消息
- * @param url 相关的 URL
- */
-export async function showErrorNotification(
-  message: string,
-  url?: string
-): Promise<void> {
-  try {
-    const notificationId = `droplink_error_${Date.now()}`
-
-    await chrome.notifications.create(notificationId, {
-      type: "basic",
-      iconUrl: chrome.runtime.getURL("assets/icon.png"),
-      title: "Droplink 错误",
-      message: url ? `${message}\nURL: ${url}` : message,
-      priority: 2
-    })
-
-    // 5 秒后自动清除通知
-    setTimeout(() => {
-      chrome.notifications.clear(notificationId)
-    }, 5000)
-  } catch (error) {
-    console.error("[TabManager] 显示通知失败:", error)
-  }
-}

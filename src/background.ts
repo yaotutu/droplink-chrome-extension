@@ -91,11 +91,34 @@ async function handleConfigChange(
  * 处理来自 popup 和 options 的消息
  */
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
-  messageHandler.handle(message).then(sendResponse)
+  messageHandler
+    .handle(message)
+    .then(sendResponse)
+    .catch((error) => {
+      console.error("[Background] 消息处理错误:", error)
+      sendResponse({ success: false, error: String(error) })
+    })
   return true // 表示会异步发送响应
 })
 
-// 扩展启动时初始化
+/**
+ * 浏览器启动时初始化
+ * 这确保了浏览器重启后扩展会自动连接
+ */
+chrome.runtime.onStartup.addListener(() => {
+  console.log("[Background] 浏览器启动，初始化扩展")
+  initialize()
+})
+
+/**
+ * 扩展安装或更新时初始化
+ */
+chrome.runtime.onInstalled.addListener((details) => {
+  console.log("[Background] 扩展已安装/更新:", details.reason)
+  initialize()
+})
+
+// 脚本加载时也初始化（用于开发模式热重载）
 initialize()
 
 // 导出供测试使用
