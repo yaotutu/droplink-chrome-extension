@@ -17,6 +17,7 @@ export class GotifyClient {
   private reconnectAttempts = 0
   private maxReconnectDelay = 60000 // 最大重连延迟 60 秒
   private reconnectTimer: ReturnType<typeof setTimeout> | null = null
+  private keepAliveTimer: ReturnType<typeof setInterval> | null = null // Keepalive 定时器
   private messageHandlers: Array<(message: GotifyMessage) => void> = []
   private statusHandlers: Array<(status: ConnectionStatus) => void> = []
   private currentStatus: ConnectionStatus = ConnectionStatus.DISCONNECTED
@@ -113,6 +114,9 @@ export class GotifyClient {
       this.reconnectTimer = null
     }
 
+    // 清除 keepalive 定时器
+    this.stopKeepAlive()
+
     // 关闭 WebSocket
     if (this.ws) {
       this.ws.close()
@@ -182,6 +186,9 @@ export class GotifyClient {
     console.log("[GotifyClient] WebSocket 连接已建立")
     this.setStatus(ConnectionStatus.CONNECTED)
     this.reconnectAttempts = 0
+
+    // 启动 keepalive 机制（每 20 秒发送一次，保持 Service Worker 活跃）
+    this.startKeepAlive()
 
     // 解析 connect() 的 Promise
     if (this.connectPromise) {
@@ -324,5 +331,41 @@ export class GotifyClient {
     ).catch((error) => {
       console.error("[GotifyClient] 显示重连通知失败:", error)
     })
+  }
+
+  /**
+   * 启动 keepalive 机制
+   * 每 20 秒发送一次 ping 消息，保持 Service Worker 活跃
+   */
+  private startKeepAlive(): void {
+    // 先清除旧的定时器
+    this.stopKeepAlive()
+
+    console.log("[GotifyClient] 启动 keepalive 机制（每 20 秒）")
+
+    this.keepAliveTimer = setInterval(() => {
+      if (this.ws && this.ws.readyState === WebSocket.OPEN) {
+        // 发送一个空的 ping 帧（不会被 Gotify 处理，但会重置 SW 定时器）
+        try {
+          // WebSocket ping 是协议层面的，浏览器会自动处理
+          // 这里发送一个简单的消息来保持连接活跃
+          this.ws.send("")
+          console.log("[GotifyClient] 发送 keepalive")
+        } catch (error) {
+          console.error("[GotifyClient] 发送 keepalive 失败:", error)
+        }
+      }
+    }, 20 * 1000) // 每 20 秒
+  }
+
+  /**
+   * 停止 keepalive 机制
+   */
+  private stopKeepAlive(): void {
+    if (this.keepAliveTimer) {
+      console.log("[GotifyClient] 停止 keepalive 机制")
+      clearInterval(this.keepAliveTimer)
+      this.keepAliveTimer = null
+    }
   }
 }
