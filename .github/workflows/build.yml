@@ -24,7 +24,7 @@ jobs:
       - name: Setup pnpm
         uses: pnpm/action-setup@v2
         with:
-          version: 8
+          version: 10
 
       # 4. 获取 pnpm store 目录
       - name: Get pnpm store directory
