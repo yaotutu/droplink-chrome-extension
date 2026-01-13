@@ -21,6 +21,10 @@ export class GotifyClient {
   private statusHandlers: Array<(status: ConnectionStatus) => void> = []
   private currentStatus: ConnectionStatus = ConnectionStatus.DISCONNECTED
   private manualDisconnect = false
+  private connectPromise: {
+    resolve: () => void
+    reject: (error: Error) => void
+  } | null = null
 
   /**
    * 连接到 Gotify 服务器
@@ -41,26 +45,59 @@ export class GotifyClient {
     this.config = config
     this.manualDisconnect = false
 
-    try {
-      // 构建 WebSocket URL
-      const wsUrl = this.buildWebSocketUrl(config.gotifyUrl, config.clientToken)
+    // 创建 Promise，等待连接成功或失败
+    return new Promise<void>((resolve, reject) => {
+      this.connectPromise = { resolve, reject }
 
-      console.log(`[GotifyClient] 连接到: ${config.gotifyUrl}`)
-      this.setStatus(ConnectionStatus.CONNECTING)
+      try {
+        // 构建 WebSocket URL
+        const wsUrl = this.buildWebSocketUrl(
+          config.gotifyUrl,
+          config.clientToken
+        )
 
-      // 创建 WebSocket 连接
-      this.ws = new WebSocket(wsUrl)
+        console.log(`[GotifyClient] 连接到: ${config.gotifyUrl}`)
+        this.setStatus(ConnectionStatus.CONNECTING)
 
-      // 设置事件处理器
-      this.ws.onopen = this.handleOpen.bind(this)
-      this.ws.onmessage = this.handleMessage.bind(this)
-      this.ws.onerror = this.handleError.bind(this)
-      this.ws.onclose = this.handleClose.bind(this)
-    } catch (error) {
-      console.error("[GotifyClient] 连接失败:", error)
-      this.setStatus(ConnectionStatus.ERROR)
-      this.scheduleReconnect()
-    }
+        // 创建 WebSocket 连接
+        this.ws = new WebSocket(wsUrl)
+
+        // 设置连接超时（10 秒）
+        const timeout = setTimeout(() => {
+          if (
+            this.currentStatus === ConnectionStatus.CONNECTING &&
+            this.connectPromise
+          ) {
+            const error = new Error("连接超时")
+            this.connectPromise.reject(error)
+            this.connectPromise = null
+            this.disconnect()
+          }
+        }, 10000)
+
+        // 连接成功后清除超时
+        const originalOnOpen = this.handleOpen.bind(this)
+        this.ws.onopen = () => {
+          clearTimeout(timeout)
+          originalOnOpen()
+        }
+
+        // 设置其他事件处理器
+        this.ws.onmessage = this.handleMessage.bind(this)
+        this.ws.onerror = this.handleError.bind(this)
+        this.ws.onclose = this.handleClose.bind(this)
+      } catch (error) {
+        console.error("[GotifyClient] 连接失败:", error)
+        this.setStatus(ConnectionStatus.ERROR)
+        if (this.connectPromise) {
+          this.connectPromise.reject(
+            error instanceof Error ? error : new Error(String(error))
+          )
+          this.connectPromise = null
+        }
+        this.scheduleReconnect()
+      }
+    })
   }
 
   /**
@@ -145,6 +182,12 @@ export class GotifyClient {
     console.log("[GotifyClient] WebSocket 连接已建立")
     this.setStatus(ConnectionStatus.CONNECTED)
     this.reconnectAttempts = 0
+
+    // 解析 connect() 的 Promise
+    if (this.connectPromise) {
+      this.connectPromise.resolve()
+      this.connectPromise = null
+    }
   }
 
   /**
@@ -174,6 +217,12 @@ export class GotifyClient {
   private handleError(event: Event): void {
     console.error("[GotifyClient] WebSocket 错误:", event)
     this.setStatus(ConnectionStatus.ERROR)
+
+    // 如果在连接过程中出错，reject Promise
+    if (this.connectPromise) {
+      this.connectPromise.reject(new Error("WebSocket 连接错误"))
+      this.connectPromise = null
+    }
   }
 
   /**
@@ -185,6 +234,14 @@ export class GotifyClient {
     )
 
     this.ws = null
+
+    // 如果在连接过程中关闭，reject Promise
+    if (this.connectPromise) {
+      this.connectPromise.reject(
+        new Error(`连接关闭 (代码: ${event.code})`)
+      )
+      this.connectPromise = null
+    }
 
     // 如果不是手动断开，则尝试重连
     if (!this.manualDisconnect) {

@@ -30,7 +30,7 @@ async function initialize(): Promise<void> {
   const config = await getConfig()
   console.log("[Background] 已读取配置:", {
     ...config,
-    clientToken: "***"
+    clientToken: config.clientToken ? "***" : "(空)"
   })
 
   // 设置路由器配置
@@ -42,12 +42,14 @@ async function initialize(): Promise<void> {
 
   // 如果配置有效，则连接
   if (configValid) {
+    console.log("[Background] 配置有效，建立连接...")
     await connectionManager.connect(config)
+    console.log("[Background] 连接已建立")
   } else {
-    console.log("[Background] 配置无效，不连接")
+    console.log("[Background] 配置无效，跳过连接")
   }
 
-  // 监听配置变化
+  // 监听配置变化（作为备份机制，主要依赖主动 reconnect 消息）
   onConfigChange(handleConfigChange)
 
   console.log("[Background] 初始化完成")
