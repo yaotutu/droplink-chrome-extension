@@ -47,9 +47,6 @@ Used to open received links in new browser tabs, which is the core functionality
 ### notifications
 Used to show desktop notifications when new links are received from your mobile device.
 
-### host_permissions (https://*/*)
-Required to connect to your self-hosted or configured Gotify server. The extension only connects to the server URL you explicitly configure.
-
 ## Security
 
 - **HTTPS Only**: All connections use HTTPS encryption

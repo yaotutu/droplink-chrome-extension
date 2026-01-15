@@ -312,7 +312,6 @@ Prettier 配置了自动导入排序（使用 `@ianvs/prettier-plugin-sort-impor
 ```json
 {
   "manifest": {
-    "host_permissions": ["https://*/*"],
     "permissions": [
       "storage",        // 存储配置信息
       "tabs",           // 创建和管理标签页

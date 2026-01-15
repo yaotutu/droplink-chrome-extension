@@ -122,20 +122,7 @@ The extension only connects to a self-hosted or user-configured Gotify server fo
 The WebSocket connection is used solely for receiving JSON messages containing links, not for loading or executing remote code.
 ```
 
-### 3. 主机权限理由（Host Permissions: https://*/*）
-```
-The host permission "https://*/*" is required for the following reasons:
-
-1. User-configured server connection: Users can configure their own Gotify server URL (e.g., https://gotify.example.com). The extension needs to connect to any HTTPS domain the user specifies.
-
-2. WebSocket connection: The extension establishes a WebSocket connection to the user's Gotify server to receive real-time link notifications.
-
-3. No content script injection: This permission is NOT used to inject content scripts into web pages or access page content. It is solely for connecting to the user's messaging server.
-
-The extension respects user privacy and only connects to the server URL explicitly configured by the user in the settings page.
-```
-
-### 4. notifications 权限理由
+### 3. notifications 权限理由
 ```
 The "notifications" permission is used to show desktop notifications when a new link is received from the mobile device.
 
@@ -149,7 +136,7 @@ Notifications display:
 This feature is optional and can be disabled by the user in the extension settings.
 ```
 
-### 5. storage 权限理由
+### 4. storage 权限理由
 ```
 The "storage" permission is used to save user settings and authentication tokens locally.
 
@@ -162,7 +149,7 @@ Stored data includes:
 All data is stored locally using Chrome's storage API and is never transmitted to third parties. The data is only used for the extension's core functionality of receiving and processing links.
 ```
 
-### 6. tabs 权限理由
+### 5. tabs 权限理由
 ```
 The "tabs" permission is used to open received links in new browser tabs, which is the core functionality of this extension.
 
@@ -327,7 +314,6 @@ unzip -l droplink-chrome-extension-v1.0.0.zip
 ### 隐私权规范
 - [ ] 单一用途说明已填写
 - [ ] 远程代码使用理由已填写
-- [ ] 主机权限理由已填写
 - [ ] notifications 权限理由已填写
 - [ ] storage 权限理由已填写
 - [ ] tabs 权限理由已填写
