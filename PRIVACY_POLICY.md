@@ -80,7 +80,7 @@ This extension is open source. You can review the complete source code at:
 If you have any questions about this Privacy Policy or the extension's privacy practices, please contact us:
 
 - **Email**: support@droplink.example.com
-- **GitHub Issues**: https://github.com/yourusername/droplink/issues
+- **GitHub Issues**: https://github.com/yaotutu/droplink/issues
 
 ## Compliance
 
