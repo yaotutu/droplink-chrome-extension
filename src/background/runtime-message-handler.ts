@@ -75,35 +75,19 @@ export class RuntimeMessageHandler {
     }
 
     const testClient = new GotifyClient()
-    let resolved = false // 防止多次 resolve
 
-    return new Promise((resolveFunc) => {
-      // 包装 resolve 函数，确保只调用一次
-      const resolve = (value: RuntimeResponse) => {
-        if (!resolved) {
-          resolved = true
-          clearTimeout(timeoutId)
-          testClient.disconnect()
-          resolveFunc(value)
-        }
+    try {
+      // connect() 现在会等待连接真正建立
+      await testClient.connect(config)
+      testClient.disconnect()
+      return { success: true, data: { connected: true } }
+    } catch (error) {
+      testClient.disconnect()
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : String(error)
       }
-
-      const timeoutId = setTimeout(() => {
-        resolve({ success: false, error: "连接超时" })
-      }, 10000)
-
-      testClient.onStatusChange((status) => {
-        if (status === ConnectionStatus.CONNECTED) {
-          resolve({ success: true, data: { connected: true } })
-        } else if (status === ConnectionStatus.ERROR) {
-          resolve({ success: false, error: "连接失败" })
-        }
-      })
-
-      testClient.connect(config).catch((error) => {
-        resolve({ success: false, error: String(error) })
-      })
-    })
+    }
   }
 
   /**
@@ -111,15 +95,30 @@ export class RuntimeMessageHandler {
    */
   private async handleReconnect(): Promise<RuntimeResponse> {
     try {
+      console.log("[RuntimeMessageHandler] 收到重连请求")
+
       const config = await getConfig()
       if (!isConfigValid(config)) {
+        console.error("[RuntimeMessageHandler] 配置无效")
         return { success: false, error: "配置无效" }
       }
 
+      console.log("[RuntimeMessageHandler] 配置有效，开始重连...")
+
+      // 先断开旧连接（如果存在）
+      this.connectionManager.disconnect()
+
+      // 建立新连接
       await this.connectionManager.connect(config)
+
+      console.log("[RuntimeMessageHandler] 重连成功")
       return { success: true }
     } catch (error) {
-      return { success: false, error: String(error) }
+      console.error("[RuntimeMessageHandler] 重连失败:", error)
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : String(error)
+      }
     }
   }
 

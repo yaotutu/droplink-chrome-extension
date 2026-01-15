@@ -11,47 +11,62 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 通过 WebSocket 连接到 Gotify 服务器，实时监听消息推送，根据消息内容自动打开指定的网页标签页。
 
 **使用场景**：
-- 从移动设备快速在电脑上打开链接
-- 自动化脚本完成后自动打开结果页面
-- 远程控制浏览器打开特定网页
+- 📱 从移动设备快速在电脑上打开链接
+- 🤖 自动化脚本完成后自动打开结果页面
+- 🔗 远程控制浏览器打开特定网页
+- 📋 跨设备协作，快速分享链接
 
 ### 技术特性
 
 - ✅ WebSocket 实时连接 Gotify 服务器
-- ✅ 自动重连机制（指数退避策略）
-- ✅ 消息格式验证
+- ✅ 自动重连机制（指数退避策略：1s → 2s → 4s → ... → 60s）
+- ✅ 智能消息过滤（支持标签过滤）
+- ✅ 消息格式验证（严格的 JSON Schema 验证）
 - ✅ 自动打开并激活标签页
 - ✅ 完整的错误处理和通知系统
-- ✅ 配置管理界面
+- ✅ 多种登录方式（邮箱验证码 + Token 直连）
+- ✅ 配置管理界面（Options 页面）
+- ✅ 状态可视化（扩展图标徽章）
+
+---
 
 ## 常用命令
 
 ### 开发
 ```bash
-npm run dev
-# 或
 pnpm dev
+# 或
+npm run dev
 ```
 启动开发服务器后，在浏览器中加载 `build/chrome-mv3-dev` 目录。
 
 ### 构建生产版本
 ```bash
-npm run build
-# 或
 pnpm build
+# 或
+npm run build
 ```
-生成用于发布到商店的生产构建包。
+生成用于发布到商店的生产构建包，输出到 `build/chrome-mv3-prod` 目录。
 
 ### 打包
 ```bash
-npm run package
-# 或
 pnpm package
+# 或
+npm run package
 ```
-为扩展创建可发布的打包文件。
+为扩展创建可发布的 ZIP 打包文件。
 
 ### 代码格式化
 项目配置了 Prettier，配置文件为 `.prettierrc.mjs`。
+
+**代码风格**：
+- 不使用分号（semi: false）
+- 使用双引号（singleQuote: false）
+- 2 个空格缩进
+- 不使用尾随逗号（trailingComma: "none"）
+- 自动导入排序（使用 `@ianvs/prettier-plugin-sort-imports`）
+
+---
 
 ## 架构和项目结构
 
@@ -64,8 +79,9 @@ droplink-chrome-extension/
 │   ├── popup.tsx              # Popup 页面入口
 │   ├── options.tsx            # Options 页面入口
 │   │
-│   ├── background/            # 后台模块
+│   ├── background/            # 后台管理模块
 │   │   ├── connection-manager.ts      # 连接管理器
+│   │   ├── icon-manager.ts            # 图标状态管理
 │   │   └── runtime-message-handler.ts # Runtime 消息处理
 │   │
 │   ├── pages/                 # 页面组件
@@ -74,13 +90,16 @@ droplink-chrome-extension/
 │   │   │   └── hooks/         # usePopupState
 │   │   └── options/
 │   │       ├── components/    # LoginForm, ConfigCard, FeatureToggles 等
-│   │       └── hooks/         # useOptionsState, useLoginForm 等
+│   │       └── hooks/         # useOptionsState
 │   │
 │   ├── shared/                # 共享代码
-│   │   ├── components/        # 通用组件
+│   │   ├── components/        # 通用组件（Switch 等）
 │   │   ├── hooks/             # useConfig, useStatus, useRuntimeMessage
+│   │   ├── store/             # Zustand 状态管理
 │   │   ├── utils/
-│   │   │   └── constants.ts   # DEFAULT_CONFIG 等常量
+│   │   │   ├── constants.ts   # DEFAULT_CONFIG 等常量
+│   │   │   ├── validators.ts  # 验证函数
+│   │   │   └── timeout.ts     # 超时工具
 │   │   └── types/
 │   │       └── index.ts       # TypeScript 类型定义
 │   │
@@ -91,104 +110,189 @@ droplink-chrome-extension/
 │       ├── messaging/
 │       │   ├── router.ts      # 消息路由
 │       │   ├── context.ts     # 依赖注入容器
-│       │   └── handlers/      # openTab, notification
+│       │   └── handlers/      # openTab 等消息处理器
 │       ├── storage/           # 配置存储
 │       ├── tabs/              # 标签页管理
 │       └── notifications/     # 通知管理
 │
-├── assets/                    # 静态资源
+├── assets/                    # 静态资源（图标等）
+├── docs/                      # 文档
+│   ├── QUICK_REFERENCE.md     # 快速参考
+│   ├── CHROME_STORE_REQUIREMENTS.md  # Chrome 商店要求
+│   └── ...
 ├── package.json               # 项目配置（含 Plasmo srcDir）
 ├── tsconfig.json              # TypeScript 配置（含路径别名）
+├── .prettierrc.mjs            # Prettier 配置
 ├── CLAUDE.md                  # 本文件
-├── DEBUG.md                   # 调试指南
 └── README.md                  # 项目说明
 ```
 
-### 核心模块说明
+---
 
-#### 1. src/background.ts - 后台服务脚本入口
+## 核心模块说明
+
+### 1. src/background.ts - 后台服务脚本入口
 - 扩展的主入口，协调所有模块
 - 初始化消息路由器和连接管理器
 - 监听配置变化并自动重连
 - 处理 popup/options 与 background 之间的消息通信
 
-#### 2. src/core/gotify/client.ts - Gotify WebSocket 客户端
+**关键职责**：
+- 初始化 `ConnectionManager` 和 `RuntimeMessageHandler`
+- 监听 `chrome.storage.onChanged` 事件
+- 管理扩展生命周期
+
+### 2. src/core/gotify/client.ts - Gotify WebSocket 客户端
 - 建立和维护 WebSocket 连接
-- 自动重连机制（1s → 2s → 4s → ... → 最大 60s）
+- 自动重连机制（指数退避：1s → 2s → 4s → ... → 最大 60s）
 - 接收和解析 Gotify 消息
 - 连接状态管理
 
-#### 3. src/core/messaging/ - 消息处理系统
+**关键特性**：
+- 使用 `WebSocket` API 连接 Gotify 服务器
+- 实现 `EventEmitter` 模式，发出 `message`、`connected`、`disconnected` 等事件
+- 自动处理网络断开和重连
+
+### 3. src/core/messaging/ - 消息处理系统
 - **router.ts**: 消息路由，分发给对应的 handler
 - **context.ts**: 依赖注入容器（MessageContext），解耦 handlers 与 storage
-- **handlers/**: 各种消息处理器（openTab, notification）
+- **handlers/**: 各种消息处理器（openTab 等）
+
+**架构模式**：
 - 使用依赖注入模式，handlers 通过 context 获取配置
+- 解耦了消息处理器与配置存储的依赖关系
+- 易于测试和扩展
 
-#### 4. src/background/ - 后台管理模块
+### 4. src/background/ - 后台管理模块
 - **connection-manager.ts**: 管理 Gotify 连接和状态
+  - 封装 `GotifyClient`
+  - 管理连接生命周期
+  - 处理消息路由
+- **icon-manager.ts**: 根据连接状态更新扩展图标徽章
+  - 🟢 绿色圆点 = 已连接
+  - 🟡 黄色圆点 = 连接中
+  - 🟠 橙色圆点 = 重连中
+  - 🔴 红色感叹号 = 连接错误
 - **runtime-message-handler.ts**: 处理来自 UI 的 runtime 消息
+  - 处理 `getConfig`、`saveConfig`、`getStatus` 等消息
 
-#### 5. src/shared/hooks/ - 共享 React Hooks
+### 5. src/shared/hooks/ - 共享 React Hooks
 - **useConfig**: 配置管理（读取、保存、更新）
 - **useStatus**: 状态管理（连接状态等）
 - **useRuntimeMessage**: Runtime 消息通信
 - 消除了 popup 和 options 中的代码重复
 
-#### 6. src/pages/ - UI 页面组件
+**设计原则**：
+- 单一职责原则
+- 可复用性
+- 类型安全
+
+### 6. src/pages/ - UI 页面组件
 - **popup/**: Popup 页面（状态展示）
+  - 显示连接状态
+  - 显示功能信息
+  - 显示警告信息
 - **options/**: Options 页面（登录、配置、功能开关）
+  - 邮箱验证码登录
+  - Token 直连登录
+  - 功能开关（通知、过滤等）
+  - 配置管理
+
+**组件化设计**：
 - 采用组件化设计，单一职责原则
 - 每个页面有自己的 components 和 hooks
+- 使用 Zustand 进行状态管理
 
-#### 7. src/core/storage/ - 配置存储管理
-- 使用 chrome.storage.sync API 存储配置
+### 7. src/core/storage/ - 配置存储管理
+- 使用 `chrome.storage.sync` API 存储配置
 - 配置验证（URL 和 Token 格式）
 - 监听配置变化
 
-#### 8. src/core/tabs/ 和 src/core/notifications/
+**存储的配置**：
+- `gotifyUrl`: Gotify 服务器地址
+- `clientToken`: 客户端 Token
+- `openTabNotification`: 是否显示打开标签页通知
+- `showAllNotifications`: 是否显示所有 Gotify 通知
+
+### 8. src/core/tabs/ 和 src/core/notifications/
 - **tabs/**: 使用 Chrome Tabs API 创建和管理标签页
+  - `createTab()`: 创建新标签页
+  - `activateTab()`: 激活标签页
 - **notifications/**: 显示浏览器通知
+  - `showNotification()`: 显示通知
+  - `showError()`: 显示错误通知
 
-#### 9. src/shared/utils/constants.ts - 常量定义
-- DEFAULT_CONFIG: 配置默认值（单一数据源）
-- APP_NAME, APP_VERSION 等应用常量
+### 9. src/shared/utils/constants.ts - 常量定义
+- `DEFAULT_CONFIG`: 配置默认值（单一数据源）
+- `APP_NAME`, `APP_VERSION`: 应用常量
+- `AUTH_SERVER_URL`: 认证服务器地址
+- `GOTIFY_SERVER_URL`: Gotify 服务器地址
 
-#### 10. src/popup.tsx 和 src/options.tsx
-- **popup.tsx**: Popup 页面入口（约100行）
-- **options.tsx**: Options 页面入口（约120行）
-- 通过 Plasmo 的 srcDir 配置识别为入口文件
+**重要**：所有默认配置都在这里定义，避免重复。
+
+### 10. src/popup.tsx 和 src/options.tsx
+- **popup.tsx**: Popup 页面入口（约 100 行）
+- **options.tsx**: Options 页面入口（约 120 行）
+- 通过 Plasmo 的 `srcDir` 配置识别为入口文件
+
+---
 
 ## 架构特点
 
-### 依赖注入模式
+### 1. 依赖注入模式
 - 使用 `MessageContext` 作为依赖注入容器
 - Handlers 通过 context 参数接收配置，不直接调用 storage
 - 解耦了消息处理器与配置存储的依赖关系
 
-### 代码复用
+**优势**：
+- 易于测试（可以 mock context）
+- 易于扩展（添加新的 handler 不需要修改其他代码）
+- 解耦模块依赖
+
+### 2. 代码复用
 - `DEFAULT_CONFIG` 定义在单一位置（src/shared/utils/constants.ts）
 - 共享 Hooks（useConfig, useStatus, useRuntimeMessage）消除重复
 - 组件化设计，便于维护和测试
 
-### 目录分层
-- **src/core/**: 核心业务逻辑（无UI依赖）
+### 3. 目录分层
+- **src/core/**: 核心业务逻辑（无 UI 依赖）
 - **src/shared/**: 跨页面共享代码（hooks, types, utils）
-- **src/pages/**: UI页面组件（popup, options）
+- **src/pages/**: UI 页面组件（popup, options）
 - **src/background/**: 后台服务模块
 
-### 技术栈
+**分层原则**：
+- 核心逻辑与 UI 分离
+- 共享代码统一管理
+- 单向依赖（UI → shared → core）
+
+### 4. 状态管理
+- 使用 Zustand 进行轻量级状态管理
+- 配置存储在 `chrome.storage.sync` 中
+- 状态通过 Runtime 消息在 background 和 UI 之间同步
+
+---
+
+## 技术栈
 
 - **框架**: Plasmo 0.90.5
 - **UI 库**: React 18.2.0
+- **状态管理**: Zustand 5.0.9
 - **语言**: TypeScript 5.3.3
 - **包管理器**: pnpm（推荐）或 npm
 - **构建工具**: Plasmo 内置（基于 esbuild）
+- **代码格式化**: Prettier 3.2.4
 
 ### TypeScript 配置
 
 - 继承自 `plasmo/templates/tsconfig.base`
 - 路径别名：`~*` 映射到项目根目录
 - 基础路径设置为项目根目录
+
+**示例**：
+```typescript
+import { Config } from "~/shared/types"
+import { DEFAULT_CONFIG } from "~/shared/utils/constants"
+```
 
 ### 导入顺序规则
 
@@ -208,19 +312,21 @@ Prettier 配置了自动导入排序（使用 `@ianvs/prettier-plugin-sort-impor
 ```json
 {
   "manifest": {
-    "host_permissions": ["https://*/*"],
     "permissions": [
-      "storage",      // 存储配置信息
-      "tabs",         // 创建和管理标签页
-      "notifications" // 显示错误通知
-    ]
+      "storage",        // 存储配置信息
+      "tabs",           // 创建和管理标签页
+      "notifications"   // 显示错误通知
+    ],
+    "minimum_chrome_version": "116"
   }
 }
 ```
 
+---
+
 ## Gotify 消息格式
 
-### Droplink 消息规范
+### Droplink 消息规范（新格式）
 
 Droplink 使用 Gotify 消息的 `extras.droplink` 字段来传递控制指令：
 
@@ -231,10 +337,23 @@ Droplink 使用 Gotify 消息的 `extras.droplink` 字段来传递控制指令�
   "priority": 5,
   "extras": {
     "droplink": {
-      "action": "openTab",
-      "url": "https://example.com",
-      "options": {
-        "activate": true
+      "id": "unique-message-id",
+      "timestamp": 1704067200000,
+      "sender": "mobile-app",
+      "content": {
+        "type": "url",
+        "value": "https://example.com"
+      },
+      "actions": [
+        {
+          "type": "openTab",
+          "params": {
+            "activate": true
+          }
+        }
+      ],
+      "metadata": {
+        "tags": ["work", "important"]
       }
     }
   }
@@ -245,16 +364,31 @@ Droplink 使用 Gotify 消息的 `extras.droplink` 字段来传递控制指令�
 
 | 字段 | 类型 | 必填 | 说明 |
 |------|------|------|------|
-| `action` | string | 是 | 操作类型，固定为 `"openTab"` |
-| `url` | string | 是 | 要打开的 URL，必须是有效的 HTTP/HTTPS URL |
-| `options.activate` | boolean | 否 | 是否激活标签页，默认 `true` |
+| `id` | string | 否 | 消息唯一标识 |
+| `timestamp` | number | 否 | 时间戳 |
+| `sender` | string | 否 | 发送者标识 |
+| `content.type` | string | 是 | 内容类型，固定为 `"url"` |
+| `content.value` | string | 是 | 要打开的 URL |
+| `actions[].type` | string | 是 | 操作类型，固定为 `"openTab"` |
+| `actions[].params.activate` | boolean | 否 | 是否激活标签页，默认 `true` |
+| `metadata.tags` | string[] | 否 | 消息标签，用于过滤 |
 
 ### 消息验证规则
 
 - 必须包含 `extras.droplink` 字段
-- `action` 必须为 `"openTab"`
-- `url` 必须符合 URL 格式，且以 `http://` 或 `https://` 开头
+- `content.type` 必须为 `"url"`
+- `content.value` 必须是有效的 HTTP/HTTPS URL
+- `actions` 数组至少包含一个 `openTab` 操作
 - 非 Droplink 格式的消息会被静默忽略
+
+### 标签过滤
+
+如果在 Options 页面配置了标签过滤：
+- 只有包含指定标签的消息才会被处理
+- 标签匹配不区分大小写
+- 支持多个标签（OR 逻辑）
+
+---
 
 ## 使用指南
 
@@ -264,7 +398,7 @@ Droplink 使用 Gotify 消息的 `extras.droplink` 字段来传递控制指令�
 
 1. 打开 Gotify Web 界面
 2. 登录后，点击右上角的 **⚙️ 设置**
-3. 在左侧菜单中，点击 **"Clients"（客户端）**（注意：不是 "Apps"）
+3. 在左侧菜单中，点击 **"Clients"（客户端）**（⚠️ 注意：不是 "Apps"）
 4. 点击 **"Create Client"** 按钮
 5. 填写客户端名称（如 "Droplink Chrome Extension"）
 6. 创建后，复制生成的**客户端 Token**
@@ -284,11 +418,18 @@ docker run -d \
   gotify/server
 ```
 
-或在 `docker-compose.yml` 中添加：
+**Docker Compose**：
 
 ```yaml
-environment:
-  - GOTIFY_SERVER_CORS_ALLOWORIGINS=*
+services:
+  gotify:
+    image: gotify/server
+    ports:
+      - "2345:80"
+    environment:
+      - GOTIFY_SERVER_CORS_ALLOWORIGINS=*
+    volumes:
+      - ./data:/app/data
 ```
 
 **配置文件方式**：
@@ -312,11 +453,7 @@ server:
 
 **注意**：
 - 客户端 Token 从 Gotify 的 **"Clients"（客户端）** 页面获取，不是 "Apps"
-- 登录成功后可以通过扩展图标右下角的徽章颜色查看连接状态：
-  - 🟢 绿色圆点 = 已连接
-  - 🟡 黄色圆点 = 连接中
-  - 🟠 橙色圆点 = 重连中
-  - 🔴 红色感叹号 = 连接错误
+- 登录成功后可以通过扩展图标右下角的徽章颜色查看连接状态
 
 ### 3. 发送测试消息
 
@@ -327,15 +464,22 @@ curl -X POST "http://你的服务器:2345/message?token=应用TOKEN" \
   -H "Content-Type: application/json" \
   -d '{
     "title": "Droplink 测试",
-    "message": "自动打开 Google",
+    "message": "打开 Google",
     "priority": 5,
     "extras": {
       "droplink": {
-        "action": "openTab",
-        "url": "https://www.google.com",
-        "options": {
-          "activate": true
-        }
+        "content": {
+          "type": "url",
+          "value": "https://www.google.com"
+        },
+        "actions": [
+          {
+            "type": "openTab",
+            "params": {
+              "activate": true
+            }
+          }
+        ]
       }
     }
   }'
@@ -348,42 +492,57 @@ curl -X POST "http://你的服务器:2345/message?token=应用TOKEN" \
 ```python
 import requests
 
-def send_droplink(gotify_url, app_token, url, title="打开链接"):
+def send_droplink(gotify_url, app_token, url, title="打开链接", tags=None):
+    """发送 Droplink 消息"""
     payload = {
         "title": title,
         "message": f"打开链接: {url}",
         "priority": 5,
         "extras": {
             "droplink": {
-                "action": "openTab",
-                "url": url,
-                "options": {
-                    "activate": True
-                }
+                "content": {
+                    "type": "url",
+                    "value": url
+                },
+                "actions": [
+                    {
+                        "type": "openTab",
+                        "params": {
+                            "activate": True
+                        }
+                    }
+                ]
             }
         }
     }
+
+    # 添加标签（可选）
+    if tags:
+        payload["extras"]["droplink"]["metadata"] = {"tags": tags}
 
     response = requests.post(
         f"{gotify_url}/message?token={app_token}",
         json=payload
     )
-    return response
+    return response.json()
 
 # 使用示例
 send_droplink(
     "http://111.228.1.24:2345",
     "你的应用TOKEN",
-    "https://github.com"
+    "https://github.com",
+    tags=["work", "github"]
 )
 ```
+
+---
 
 ## 开发注意事项
 
 ### 热重载
 开发模式下，修改代码后：
-- **popup.tsx** 会自动更新
-- **background.ts** 和 lib 文件需要在 `chrome://extensions/` 中点击刷新按钮
+- **popup.tsx** 和 **options.tsx** 会自动更新
+- **background.ts** 和 core 文件需要在 `chrome://extensions/` 中点击刷新按钮
 
 ### 调试
 
@@ -398,31 +557,34 @@ send_droplink(
 3. 点击 **"Service Worker"** 的蓝色链接
 4. 在 Console 标签查看详细日志
 
-**详细的调试指南请查看 `DEBUG.md` 文件。**
+**详细的调试指南请查看 `docs/` 目录下的相关文档。**
 
 ### 日志过滤
 
 开发模式下，控制台会显示大量 Plasmo HMR（热重载）日志。可以在控制台中输入过滤关键词：
 
-- `Droplink`
-- `GotifyClient`
-- `MessageHandler`
-- `TabManager`
+- `[Droplink]`
+- `[GotifyClient]`
+- `[MessageRouter]`
+- `[ConnectionManager]`
 
 ### 添加新功能
 
-如需添加新的消息处理类型：
+#### 添加新的消息处理类型：
 
-1. 在 `types/index.ts` 中更新 `DroplinkMessage` 接口
-2. 在 `lib/message-handler.ts` 中添加验证逻辑
-3. 实现对应的处理函数
+1. 在 `src/shared/types/index.ts` 中更新 `DroplinkAction` 接口
+2. 在 `src/core/messaging/handlers/` 中创建新的 handler
+3. 在 `src/core/messaging/router.ts` 中注册新的 handler
 4. 更新本文档的消息格式说明
 
-### 代码风格
-- 不使用分号（semi: false）
-- 使用双引号（singleQuote: false）
-- 2 个空格缩进
-- 不使用尾随逗号（trailingComma: "none"）
+#### 添加新的配置项：
+
+1. 在 `src/shared/types/index.ts` 中更新 `Config` 接口
+2. 在 `src/shared/utils/constants.ts` 中更新 `DEFAULT_CONFIG`
+3. 在 Options 页面添加对应的 UI 控件
+4. 更新相关的业务逻辑
+
+---
 
 ## 常见问题
 
@@ -442,7 +604,8 @@ send_droplink(
 1. 检查 Service Worker 控制台日志
 2. 确认消息格式正确（包含 `extras.droplink` 字段）
 3. 确认 URL 以 `http://` 或 `https://` 开头
-4. 查看是否有红色错误信息
+4. 检查是否配置了标签过滤，消息是否包含匹配的标签
+5. 查看是否有红色错误信息
 
 ### 3. 连接状态显示"未连接"
 
@@ -470,20 +633,27 @@ Gotify 有两种 Token：
 **Droplink 扩展使用客户端 Token 接收消息。**
 **发送消息的脚本使用应用 Token。**
 
+---
+
 ## 安全注意事项
 
 1. **Token 安全**：
-   - Token 存储在 `chrome.storage.sync` 中（加密）
+   - Token 存储在 `chrome.storage.sync` 中（Chrome 会加密）
    - 不要在不安全的设备上使用
    - 定期更换 Token
+   - 不要在公共场所展示包含 Token 的配置页面
 
 2. **URL 安全**：
    - 目前只验证 URL 格式（http/https）
-   - 未来可考虑添加 URL 白名单/黑名单功能
+   - 建议在 Gotify 中为 Droplink 创建专用的应用
+   - 谨慎处理来自不可信来源的消息
 
 3. **消息验证**：
    - 非 Droplink 格式的消息会被忽略
-   - 建议在 Gotify 中为 Droplink 创建专用的应用
+   - 支持标签过滤，只接收特定标签的消息
+   - 严格的 JSON Schema 验证
+
+---
 
 ## 参考资料
 
@@ -491,6 +661,45 @@ Gotify 有两种 Token：
 - [Gotify 官方文档](https://gotify.net/)
 - [Chrome Extension API](https://developer.chrome.com/docs/extensions/reference/)
 - [WebSocket API](https://developer.mozilla.org/en-US/docs/Web/API/WebSocket)
+- [TypeScript 官方文档](https://www.typescriptlang.org/)
+- [React 官方文档](https://react.dev/)
+- [Zustand 官方文档](https://zustand-demo.pmnd.rs/)
+
+---
+
+## 开发最佳实践
+
+### 1. 代码组织
+- 遵循单一职责原则
+- 保持函数简短（< 50 行）
+- 使用有意义的变量名和函数名
+- 添加必要的注释和文档
+
+### 2. 类型安全
+- 充分利用 TypeScript 的类型系统
+- 避免使用 `any` 类型
+- 为所有函数添加类型注解
+- 使用接口和类型别名
+
+### 3. 错误处理
+- 使用 try-catch 捕获异常
+- 提供有意义的错误消息
+- 记录错误日志
+- 向用户显示友好的错误提示
+
+### 4. 性能优化
+- 避免不必要的重新渲染
+- 使用 React.memo 和 useMemo
+- 合理使用 useCallback
+- 避免在循环中创建函数
+
+### 5. 测试
+- 为核心业务逻辑编写单元测试
+- 测试边界情况和错误处理
+- 使用 mock 隔离依赖
+- 保持测试简单和可维护
+
+---
 
 ## 许可证
 

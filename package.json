@@ -1,9 +1,10 @@
 {
   "name": "droplink-chrome-extension",
-  "displayName": "Droplink chrome extension",
-  "version": "0.0.1",
-  "description": "A basic Plasmo extension.",
+  "displayName": "Droplink - Cross-Device Link Sharing",
+  "version": "1.0.0",
+  "description": "Instantly receive links from your phone to your browser. One tap on mobile, auto-open on desktop.",
   "author": "yaotutu",
+  "homepage": "https://github.com/yaotutu/droplink",
   "scripts": {
     "dev": "plasmo dev",
     "build": "plasmo build",
@@ -25,15 +26,12 @@
     "typescript": "5.3.3"
   },
   "manifest": {
-    "host_permissions": [
-      "https://*/*"
-    ],
     "permissions": [
       "storage",
       "tabs",
-      "notifications",
-      "clipboardWrite"
-    ]
+      "notifications"
+    ],
+    "minimum_chrome_version": "116"
   },
   "plasmo": {
     "srcDir": "src"

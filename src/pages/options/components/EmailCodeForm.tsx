@@ -114,24 +114,28 @@ export function EmailCodeForm({ onLoginSuccess }: EmailCodeFormProps) {
         clientToken: clientToken
       }
 
-      // 测试连接
-      const testResponse = await chrome.runtime.sendMessage({
-        type: "testConnection",
-        data: newConfig
+      // 先保存配置
+      console.log("[EmailCodeForm] 保存配置...")
+      await saveConfig(newConfig)
+
+      // 主动发送重连消息（会唤醒 Service Worker 并建立连接）
+      console.log("[EmailCodeForm] 发送重连消息...")
+      const reconnectResponse = await chrome.runtime.sendMessage({
+        type: "reconnect"
       })
 
-      if (!testResponse.success) {
-        throw new Error(testResponse.error || "连接测试失败")
+      if (!reconnectResponse.success) {
+        console.error("[EmailCodeForm] 重连失败:", reconnectResponse.error)
+        throw new Error(reconnectResponse.error || "连接失败")
       }
 
-      // 保存配置
-      await saveConfig(newConfig)
+      console.log("[EmailCodeForm] 登录成功，已建立连接")
 
       // 显示成功提示
       if (isNewUser) {
-        alert("注册成功！已自动登录")
+        alert("注册成功！已自动连接到 Gotify 服务器")
       } else {
-        alert("登录成功！")
+        alert("登录成功！已自动连接到 Gotify 服务器")
       }
 
       // 清空表单

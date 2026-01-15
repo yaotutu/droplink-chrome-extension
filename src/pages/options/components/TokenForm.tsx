@@ -39,19 +39,24 @@ export function TokenForm({ onLoginSuccess }: TokenFormProps) {
         clientToken: token
       }
 
-      // 测试连接
-      const testResponse = await chrome.runtime.sendMessage({
-        type: "testConnection",
-        data: newConfig
-      })
-
-      if (!testResponse.success) {
-        throw new Error(testResponse.error || "连接测试失败")
-      }
-
+      // 先保存配置
+      console.log("[TokenForm] 保存配置...")
       await saveConfig(newConfig)
 
-      alert("登录成功！")
+      // 主动发送重连消息（会唤醒 Service Worker 并建立连接）
+      console.log("[TokenForm] 发送重连消息...")
+      const reconnectResponse = await chrome.runtime.sendMessage({
+        type: "reconnect"
+      })
+
+      if (!reconnectResponse.success) {
+        console.error("[TokenForm] 重连失败:", reconnectResponse.error)
+        throw new Error(reconnectResponse.error || "连接失败")
+      }
+
+      console.log("[TokenForm] 登录成功，已建立连接")
+
+      alert("登录成功！已自动连接到 Gotify 服务器")
       setToken("")
       // 调用成功回调，触发父组件重新加载配置
       onLoginSuccess?.()
