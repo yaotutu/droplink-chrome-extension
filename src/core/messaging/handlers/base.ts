@@ -9,7 +9,7 @@ import type { MessageContext } from "../context"
 
 export abstract class MessageHandler<T extends GotifyMessage> {
   /** 处理器支持的 action 类型 */
-  abstract readonly action: DroplinkAction
+  abstract readonly action: string
 
   /** 验证消息格式 */
   abstract validate(message: GotifyMessage): message is T

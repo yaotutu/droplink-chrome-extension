@@ -40,3 +40,28 @@ export function isValidGotifyUrl(url: string): boolean {
 export function isValidToken(token: string): boolean {
   return typeof token === "string" && token.trim().length >= 10
 }
+
+/**
+ * 检查 action 是否应该由 Chrome Extension 处理
+ * @param handler - action 的 handler 字段
+ * @returns 是否由 Chrome Extension 处理
+ */
+export function shouldHandleByChrome(handler?: string): boolean {
+  // 未定义、null、空字符串、或 "chrome" 都视为由 Chrome 处理
+  if (handler === undefined || handler === null) return true
+  const trimmedHandler = handler.trim()
+  if (trimmedHandler === "") return true
+  return trimmedHandler.toLowerCase() === "chrome"
+}
+
+/**
+ * 检查 DroplinkAction 是否应该由 Chrome Extension 处理
+ * @param action - DroplinkAction 对象
+ * @returns 是否由 Chrome Extension 处理
+ */
+export function isActionForChrome(action: {
+  type: string
+  handler?: string
+}): boolean {
+  return shouldHandleByChrome(action.handler)
+}

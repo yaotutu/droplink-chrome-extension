@@ -47,6 +47,13 @@ export interface GotifyMessage {
 export interface DroplinkAction {
   /** 操作类型，目前只处理 "openTab" */
   type: string
+  /**
+   * 处理端标识（v2.0 新增）
+   * - 未指定或 "chrome"：由 Chrome Extension 处理
+   * - "notion-worker"：由 Notion Worker 处理
+   * - 其他值：由对应的处理端处理
+   */
+  handler?: string
   /** 操作参数 */
   params?: {
     /** 是否激活标签页，默认 true */
