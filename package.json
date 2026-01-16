@@ -31,7 +31,8 @@
       "tabs",
       "notifications"
     ],
-    "minimum_chrome_version": "116"
+    "minimum_chrome_version": "116",
+    "default_locale": "en"
   },
   "plasmo": {
     "srcDir": "src"

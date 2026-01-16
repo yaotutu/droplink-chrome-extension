@@ -6,6 +6,8 @@ import { useState, useEffect } from "react"
 import { useStore } from "~/shared/store"
 import type { Config } from "~/shared/types"
 import { sendVerificationCode, verifyEmailCode } from "~/core/gotify/auth"
+import { AUTH_SERVER_URL, GOTIFY_SERVER_URL } from "~/shared/utils/constants"
+import { t } from "~/shared/utils/i18n"
 
 interface EmailCodeFormProps {
   onLoginSuccess?: () => void
@@ -18,6 +20,8 @@ export function EmailCodeForm({ onLoginSuccess }: EmailCodeFormProps) {
   const saveConfig = useStore((state) => state.saveConfig)
 
   // 本地 UI 状态
+  const [authServerUrl, setAuthServerUrl] = useState(AUTH_SERVER_URL)
+  const [gotifyServerUrl, setGotifyServerUrl] = useState(GOTIFY_SERVER_URL)
   const [email, setEmail] = useState("")
   const [code, setCode] = useState("")
   const [codeSent, setCodeSent] = useState(false)
@@ -48,31 +52,54 @@ export function EmailCodeForm({ onLoginSuccess }: EmailCodeFormProps) {
   }
 
   /**
+   * 验证 URL 格式
+   */
+  const isValidUrl = (url: string): boolean => {
+    try {
+      const parsedUrl = new URL(url)
+      return parsedUrl.protocol === "http:" || parsedUrl.protocol === "https:"
+    } catch {
+      return false
+    }
+  }
+
+  /**
    * 发送验证码
    */
   const handleSendCode = async () => {
+    // 验证服务器地址
+    if (!authServerUrl) {
+      alert(t("error_server_url_required"))
+      return
+    }
+
+    if (!isValidUrl(authServerUrl)) {
+      alert(t("error_invalid_url"))
+      return
+    }
+
     // 验证邮箱格式
     if (!email) {
-      alert("请输入邮箱地址")
+      alert(t("error_email_required"))
       return
     }
 
     if (!isValidEmail(email)) {
-      alert("请输入有效的邮箱地址")
+      alert(t("error_invalid_email"))
       return
     }
 
     setLoading(true)
     try {
-      await sendVerificationCode(email)
+      await sendVerificationCode(email, authServerUrl)
 
       // 开始倒计时（60 秒）
       setCodeSent(true)
       setCountdown(60)
 
-      alert("验证码已发送到您的邮箱（测试模式：0000）")
+      alert(t("success_code_sent"))
     } catch (error: any) {
-      alert(`发送验证码失败: ${error.message || error}`)
+      alert(`${t("error_send_code_failed").replace("{error}", error.message || error)}`)
     } finally {
       setLoading(false)
     }
@@ -84,34 +111,55 @@ export function EmailCodeForm({ onLoginSuccess }: EmailCodeFormProps) {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
 
+    // 验证认证服务器地址
+    if (!authServerUrl) {
+      alert(t("error_server_url_required"))
+      return
+    }
+
+    if (!isValidUrl(authServerUrl)) {
+      alert(t("error_invalid_url"))
+      return
+    }
+
+    // 验证 Gotify 服务器地址
+    if (!gotifyServerUrl) {
+      alert(t("error_server_url_required"))
+      return
+    }
+
+    if (!isValidUrl(gotifyServerUrl)) {
+      alert(t("error_invalid_url"))
+      return
+    }
+
     // 验证输入
     if (!email) {
-      alert("请输入邮箱地址")
+      alert(t("error_email_required"))
       return
     }
 
     if (!isValidEmail(email)) {
-      alert("请输入有效的邮箱地址")
+      alert(t("error_invalid_email"))
       return
     }
 
     if (!code) {
-      alert("请输入验证码")
+      alert(t("error_code_required"))
       return
     }
 
     setVerifying(true)
     try {
-      // 调用验证 API
-      const { clientToken, appToken, isNewUser } = await verifyEmailCode(
-        email,
-        code
-      )
+      // 调用验证 API（传入 Gotify 服务器地址）
+      const { clientToken, appToken, isNewUser, gotifyUrl } =
+        await verifyEmailCode(email, code, authServerUrl, gotifyServerUrl)
 
-      // 保存 Token 到配置
+      // 保存 Token 和服务器地址到配置
       const newConfig: Config = {
         ...config,
-        clientToken: clientToken
+        clientToken: clientToken,
+        gotifyUrl: gotifyUrl
       }
 
       // 先保存配置
@@ -133,9 +181,9 @@ export function EmailCodeForm({ onLoginSuccess }: EmailCodeFormProps) {
 
       // 显示成功提示
       if (isNewUser) {
-        alert("注册成功！已自动连接到 Gotify 服务器")
+        alert(t("success_register"))
       } else {
-        alert("登录成功！已自动连接到 Gotify 服务器")
+        alert(t("success_login"))
       }
 
       // 清空表单
@@ -147,7 +195,7 @@ export function EmailCodeForm({ onLoginSuccess }: EmailCodeFormProps) {
       // 调用成功回调
       onLoginSuccess?.()
     } catch (error: any) {
-      alert(`登录失败: ${error.message || error}`)
+      alert(`${t("error_login_failed").replace("{error}", error.message || error)}`)
     } finally {
       setVerifying(false)
     }
@@ -157,13 +205,13 @@ export function EmailCodeForm({ onLoginSuccess }: EmailCodeFormProps) {
     <form onSubmit={handleSubmit} style={styles.form}>
       <div style={styles.formGroup}>
         <label style={styles.label}>
-          邮箱地址 <span style={styles.required}>*</span>
+          {t("auth_server_label")} <span style={styles.required}>*</span>
         </label>
         <input
-          type="email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          placeholder="user@example.com"
+          type="text"
+          value={authServerUrl}
+          onChange={(e) => setAuthServerUrl(e.target.value)}
+          placeholder={t("auth_server_placeholder")}
           style={styles.input}
           disabled={loading || verifying}
         />
@@ -171,14 +219,42 @@ export function EmailCodeForm({ onLoginSuccess }: EmailCodeFormProps) {
 
       <div style={styles.formGroup}>
         <label style={styles.label}>
-          验证码 <span style={styles.required}>*</span>
+          {t("gotify_server_label")} <span style={styles.required}>*</span>
+        </label>
+        <input
+          type="text"
+          value={gotifyServerUrl}
+          onChange={(e) => setGotifyServerUrl(e.target.value)}
+          placeholder={t("gotify_server_placeholder")}
+          style={styles.input}
+          disabled={loading || verifying}
+        />
+      </div>
+
+      <div style={styles.formGroup}>
+        <label style={styles.label}>
+          {t("email_label")} <span style={styles.required}>*</span>
+        </label>
+        <input
+          type="email"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          placeholder={t("email_placeholder")}
+          style={styles.input}
+          disabled={loading || verifying}
+        />
+      </div>
+
+      <div style={styles.formGroup}>
+        <label style={styles.label}>
+          {t("verification_code_label")} <span style={styles.required}>*</span>
         </label>
         <div style={styles.codeContainer}>
           <input
             type="text"
             value={code}
             onChange={(e) => setCode(e.target.value)}
-            placeholder="请输入验证码"
+            placeholder={t("code_placeholder")}
             style={styles.codeInput}
             disabled={loading || verifying}
             maxLength={6}
@@ -193,11 +269,7 @@ export function EmailCodeForm({ onLoginSuccess }: EmailCodeFormProps) {
                 : {})
             }}
             disabled={loading || countdown > 0}>
-            {loading
-              ? "发送中..."
-              : countdown > 0
-                ? `${countdown}s`
-                : "发送验证码"}
+            {loading ? t("sending") : countdown > 0 ? `${countdown}s` : t("send_code")}
           </button>
         </div>
       </div>
@@ -206,13 +278,10 @@ export function EmailCodeForm({ onLoginSuccess }: EmailCodeFormProps) {
         type="submit"
         style={styles.submitButton}
         disabled={loading || verifying}>
-        {verifying ? "登录中..." : "登录"}
+        {verifying ? t("logging_in") : t("login")}
       </button>
 
-      <div style={styles.hint}>
-        输入邮箱后点击"发送验证码"，验证码将发送到您的邮箱（测试模式下验证码固定为
-        0000）
-      </div>
+      <div style={styles.hint}>{t("email_code_hint")}</div>
     </form>
   )
 }

@@ -4,6 +4,7 @@
 
 import type { StatusInfo } from "~/shared/types"
 import { ConnectionStatus } from "~/shared/types"
+import { t } from "~/shared/utils/i18n"
 
 interface StatusCardProps {
   status: StatusInfo
@@ -17,15 +18,15 @@ export function StatusCard({ status, serverUrl }: StatusCardProps) {
   const getStatusText = () => {
     switch (status.status) {
       case ConnectionStatus.CONNECTED:
-        return "已连接"
+        return t("connected")
       case ConnectionStatus.CONNECTING:
-        return "连接中..."
+        return t("connecting")
       case ConnectionStatus.DISCONNECTED:
-        return "未连接"
+        return t("disconnected")
       case ConnectionStatus.ERROR:
-        return "连接失败"
+        return t("connection_failed")
       default:
-        return "未知"
+        return t("unknown")
     }
   }
 
@@ -50,7 +51,7 @@ export function StatusCard({ status, serverUrl }: StatusCardProps) {
   return (
     <div style={styles.card}>
       <div style={styles.header}>
-        <span style={styles.label}>连接状态</span>
+        <span style={styles.label}>{t("connection_status")}</span>
         <div style={styles.indicatorContainer}>
           <span
             style={{
@@ -63,14 +64,14 @@ export function StatusCard({ status, serverUrl }: StatusCardProps) {
 
       {serverUrl && (
         <div style={styles.infoRow}>
-          <span style={styles.infoLabel}>服务器:</span>
+          <span style={styles.infoLabel}>{t("server_label")}</span>
           <span style={styles.infoValue}>{new URL(serverUrl).host}</span>
         </div>
       )}
 
       {status.lastConnected && (
         <div style={styles.infoRow}>
-          <span style={styles.infoLabel}>最后连接:</span>
+          <span style={styles.infoLabel}>{t("last_connected")}</span>
           <span style={styles.infoValue}>
             {new Date(status.lastConnected).toLocaleString("zh-CN", {
               month: "2-digit",

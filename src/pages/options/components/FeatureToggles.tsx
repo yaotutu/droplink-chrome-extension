@@ -4,6 +4,7 @@
 
 import { useStore } from "~/shared/store"
 import { Switch } from "~/shared/components/Switch"
+import { t } from "~/shared/utils/i18n"
 
 export function FeatureToggles() {
   const config = useStore((state) => state.config)
@@ -19,15 +20,13 @@ export function FeatureToggles() {
 
   return (
     <div style={styles.card}>
-      <h3 style={styles.title}>功能设置</h3>
+      <h3 style={styles.title}>{t("feature_settings")}</h3>
 
       {/* 显示所有通知 */}
       <div style={styles.toggleRow}>
         <div style={styles.toggleInfo}>
-          <div style={styles.toggleLabel}>显示所有通知</div>
-          <div style={styles.toggleDescription}>
-            作为 Gotify 客户端接收并显示所有消息通知
-          </div>
+          <div style={styles.toggleLabel}>{t("show_all_notifications")}</div>
+          <div style={styles.toggleDescription}>{t("show_all_notifications_desc")}</div>
         </div>
         <Switch
           checked={config.showAllNotifications}
@@ -38,10 +37,8 @@ export function FeatureToggles() {
       {/* 打开标签页时显示通知 */}
       <div style={styles.toggleRow}>
         <div style={styles.toggleInfo}>
-          <div style={styles.toggleLabel}>打开标签页时显示通知</div>
-          <div style={styles.toggleDescription}>
-            成功打开标签页后显示确认通知
-          </div>
+          <div style={styles.toggleLabel}>{t("open_tab_notification")}</div>
+          <div style={styles.toggleDescription}>{t("open_tab_notification_desc")}</div>
         </div>
         <Switch
           checked={config.openTabNotification}

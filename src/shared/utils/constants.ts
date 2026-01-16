@@ -5,12 +5,12 @@
 import type { Config } from "~/shared/types"
 
 /**
- * 认证服务器地址（固定）
+ * 认证服务器地址（默认）
  */
-export const AUTH_SERVER_URL = "http://192.168.123.100:3600"
+export const AUTH_SERVER_URL = "http://111.228.1.24:3600"
 
 /**
- * Gotify 服务器地址（固定）
+ * Gotify 服务器地址（默认）
  */
 export const GOTIFY_SERVER_URL = "http://111.228.1.24:2345"
 

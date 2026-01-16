@@ -3,6 +3,7 @@
  */
 
 import type { Config } from "~/shared/types"
+import { t } from "~/shared/utils/i18n"
 
 interface ConfigCardProps {
   config: Config
@@ -13,19 +14,19 @@ export function ConfigCard({ config, onLogout }: ConfigCardProps) {
   return (
     <div style={styles.card}>
       <div style={styles.header}>
-        <h3 style={styles.title}>配置信息</h3>
+        <h3 style={styles.title}>{t("config_info")}</h3>
         <button onClick={onLogout} style={styles.logoutButton}>
-          退出登录
+          {t("logout")}
         </button>
       </div>
 
       <div style={styles.info}>
         <div style={styles.infoRow}>
-          <span style={styles.label}>服务器:</span>
+          <span style={styles.label}>{t("server_label")}</span>
           <span style={styles.value}>{config.gotifyUrl}</span>
         </div>
         <div style={styles.infoRow}>
-          <span style={styles.label}>Token:</span>
+          <span style={styles.label}>{t("token_label")}</span>
           <span style={styles.value}>
             {config.clientToken.slice(0, 10)}...
             {config.clientToken.slice(-4)}

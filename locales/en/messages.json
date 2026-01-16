@@ -1,0 +1,298 @@
+{
+  "app_name": {
+    "message": "Droplink",
+    "description": "Application name"
+  },
+  "loading": {
+    "message": "Loading...",
+    "description": "Loading state text"
+  },
+  "open_settings": {
+    "message": "Open Settings",
+    "description": "Button to open settings page"
+  },
+  "please_configure_server": {
+    "message": "Please configure Gotify server first",
+    "description": "Warning message when server is not configured"
+  },
+  "settings_title": {
+    "message": "{APP_NAME} Settings",
+    "description": "Settings page title"
+  },
+  "version": {
+    "message": "Version {APP_VERSION}",
+    "description": "Version number display"
+  },
+  "logout_confirm": {
+    "message": "Are you sure you want to logout? This will clear all configuration.",
+    "description": "Logout confirmation message"
+  },
+  "app_description": {
+    "message": "{APP_NAME} - Control browser to open tabs remotely via Gotify",
+    "description": "Application description"
+  },
+  "gotify_website": {
+    "message": "Gotify Website",
+    "description": "Link to Gotify website"
+  },
+  "github": {
+    "message": "GitHub",
+    "description": "Link to GitHub repository"
+  },
+  "connection_status": {
+    "message": "Connection Status",
+    "description": "Connection status label"
+  },
+  "connected": {
+    "message": "Connected",
+    "description": "Connected status"
+  },
+  "connecting": {
+    "message": "Connecting...",
+    "description": "Connecting status"
+  },
+  "disconnected": {
+    "message": "Disconnected",
+    "description": "Disconnected status"
+  },
+  "connection_failed": {
+    "message": "Connection Failed",
+    "description": "Connection failed status"
+  },
+  "unknown": {
+    "message": "Unknown",
+    "description": "Unknown status"
+  },
+  "server_label": {
+    "message": "Server:",
+    "description": "Server label"
+  },
+  "last_connected": {
+    "message": "Last Connected:",
+    "description": "Last connected time label"
+  },
+  "enabled_features": {
+    "message": "Enabled Features",
+    "description": "Enabled features label"
+  },
+  "enabled": {
+    "message": "Enabled",
+    "description": "Enabled status"
+  },
+  "disabled": {
+    "message": "Disabled",
+    "description": "Disabled status"
+  },
+  "auto_open_tab": {
+    "message": "Auto Open Tab",
+    "description": "Auto open tab feature"
+  },
+  "notifications": {
+    "message": "Notifications",
+    "description": "Notifications feature"
+  },
+  "none": {
+    "message": "None",
+    "description": "None placeholder"
+  },
+  "features_label": {
+    "message": "Features:",
+    "description": "Features label"
+  },
+  "login_title": {
+    "message": "Login to Droplink",
+    "description": "Login page title"
+  },
+  "login_description": {
+    "message": "Login with email verification code or client token",
+    "description": "Login page description"
+  },
+  "email_code_login": {
+    "message": "Email Code Login",
+    "description": "Email code login tab"
+  },
+  "token_login": {
+    "message": "Token Login",
+    "description": "Token login tab"
+  },
+  "config_info": {
+    "message": "Configuration",
+    "description": "Configuration info title"
+  },
+  "logout": {
+    "message": "Logout",
+    "description": "Logout button"
+  },
+  "token_label": {
+    "message": "Token:",
+    "description": "Token label"
+  },
+  "error_email_required": {
+    "message": "Please enter email address",
+    "description": "Error: email is required"
+  },
+  "error_invalid_email": {
+    "message": "Please enter a valid email address",
+    "description": "Error: invalid email format"
+  },
+  "success_code_sent": {
+    "message": "Verification code sent to your email (Test mode: 0000)",
+    "description": "Success: code sent message"
+  },
+  "error_send_code_failed": {
+    "message": "Failed to send verification code: {error}",
+    "description": "Error: send code failed"
+  },
+  "error_code_required": {
+    "message": "Please enter verification code",
+    "description": "Error: verification code is required"
+  },
+  "success_register": {
+    "message": "Registration successful! Connected to Gotify server",
+    "description": "Success: registration message"
+  },
+  "success_login": {
+    "message": "Login successful! Connected to Gotify server",
+    "description": "Success: login message"
+  },
+  "error_login_failed": {
+    "message": "Login failed: {error}",
+    "description": "Error: login failed"
+  },
+  "email_label": {
+    "message": "Email Address *",
+    "description": "Email address label"
+  },
+  "verification_code_label": {
+    "message": "Verification Code *",
+    "description": "Verification code label"
+  },
+  "email_placeholder": {
+    "message": "user@example.com",
+    "description": "Email input placeholder"
+  },
+  "code_placeholder": {
+    "message": "Enter verification code",
+    "description": "Verification code input placeholder"
+  },
+  "sending": {
+    "message": "Sending...",
+    "description": "Sending button state"
+  },
+  "send_code": {
+    "message": "Send Code",
+    "description": "Send code button"
+  },
+  "logging_in": {
+    "message": "Logging in...",
+    "description": "Logging in button state"
+  },
+  "login": {
+    "message": "Login",
+    "description": "Login button"
+  },
+  "email_code_hint": {
+    "message": "Enter your email and click 'Send Code'. The code will be sent to your email (In test mode, the code is fixed as 0000)",
+    "description": "Email code login hint"
+  },
+  "error_token_required": {
+    "message": "Token cannot be empty",
+    "description": "Error: token is required"
+  },
+  "error_connection_failed": {
+    "message": "Connection failed",
+    "description": "Error: connection failed"
+  },
+  "client_token_label": {
+    "message": "Client Token *",
+    "description": "Client token label"
+  },
+  "token_placeholder": {
+    "message": "Enter client token",
+    "description": "Token input placeholder"
+  },
+  "hide": {
+    "message": "Hide",
+    "description": "Hide button"
+  },
+  "show": {
+    "message": "Show",
+    "description": "Show button"
+  },
+  "token_login_hint": {
+    "message": "If you already have a client token, you can enter it directly to login",
+    "description": "Token login hint"
+  },
+  "feature_settings": {
+    "message": "Feature Settings",
+    "description": "Feature settings title"
+  },
+  "show_all_notifications": {
+    "message": "Show All Notifications",
+    "description": "Show all notifications toggle"
+  },
+  "show_all_notifications_desc": {
+    "message": "Receive and display all Gotify message notifications as a Gotify client",
+    "description": "Show all notifications description"
+  },
+  "open_tab_notification": {
+    "message": "Show Open Tab Notification",
+    "description": "Open tab notification toggle"
+  },
+  "open_tab_notification_desc": {
+    "message": "Show confirmation notification after successfully opening a tab",
+    "description": "Open tab notification description"
+  },
+  "notification_filter": {
+    "message": "Notification Filter",
+    "description": "Notification filter title"
+  },
+  "standard_gotify_service": {
+    "message": "This is a standard Gotify service that will receive all Gotify messages.",
+    "description": "Standard service description"
+  },
+  "default_all_messages": {
+    "message": "All messages are displayed by default. You can enable filtering rules to control which messages to show.",
+    "description": "Default behavior description"
+  },
+  "enable_filter_rules": {
+    "message": "Enable Filter Rules",
+    "description": "Enable filter rules toggle"
+  },
+  "enable_filter_rules_desc": {
+    "message": "Control which messages display notifications based on rules",
+    "description": "Enable filter rules description"
+  },
+  "filter_open_tab_messages": {
+    "message": "Filter OpenTab Messages",
+    "description": "Filter open tab messages toggle"
+  },
+  "filter_open_tab_messages_desc": {
+    "message": "Do not show notifications for messages that automatically opened tabs",
+    "description": "Filter open tab messages description"
+  },
+  "auth_server_label": {
+    "message": "Auth Server URL *",
+    "description": "Auth server URL label"
+  },
+  "auth_server_placeholder": {
+    "message": "http://111.228.1.24:3600",
+    "description": "Auth server URL placeholder"
+  },
+  "gotify_server_label": {
+    "message": "Gotify Server URL *",
+    "description": "Gotify server URL label"
+  },
+  "gotify_server_placeholder": {
+    "message": "http://111.228.1.24:2345",
+    "description": "Gotify server URL placeholder"
+  },
+  "error_server_url_required": {
+    "message": "Server URL is required",
+    "description": "Error: Server URL required"
+  },
+  "error_invalid_url": {
+    "message": "Please enter a valid server URL (http:// or https://)",
+    "description": "Error: Invalid URL format"
+  }
+}

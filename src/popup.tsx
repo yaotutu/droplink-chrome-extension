@@ -7,6 +7,7 @@ import { useStore } from "~/shared/store"
 import { StatusCard } from "~/pages/popup/components/StatusCard"
 import { WarningCard } from "~/pages/popup/components/WarningCard"
 import { APP_VERSION } from "~/shared/utils/constants"
+import { t } from "~/shared/utils/i18n"
 
 function IndexPopup() {
   // 从 store 读取状态
@@ -30,7 +31,7 @@ function IndexPopup() {
   if (loading) {
     return (
       <div style={styles.container}>
-        <div style={styles.loading}>加载中...</div>
+        <div style={styles.loading}>{t("loading")}</div>
       </div>
     )
   }
@@ -39,7 +40,7 @@ function IndexPopup() {
     <div style={styles.container}>
       {/* 页面标题 */}
       <div style={styles.header}>
-        <h2 style={styles.title}>Droplink</h2>
+        <h2 style={styles.title}>{t("app_name")}</h2>
         <div style={styles.version}>v{APP_VERSION}</div>
       </div>
 
@@ -49,13 +50,11 @@ function IndexPopup() {
       {/* 设置按钮 */}
       <button onClick={openSettings} style={styles.settingsButton}>
         <span style={styles.buttonIcon}>⚙️</span>
-        <span>打开设置</span>
+        <span>{t("open_settings")}</span>
       </button>
 
       {/* 警告提示 */}
-      {!status.configValid && (
-        <WarningCard message="请先配置 Gotify 服务器" />
-      )}
+      {!status.configValid && <WarningCard message={t("please_configure_server")} />}
     </div>
   )
 }

@@ -5,6 +5,8 @@
 import { useState } from "react"
 import { useStore } from "~/shared/store"
 import type { Config } from "~/shared/types"
+import { GOTIFY_SERVER_URL } from "~/shared/utils/constants"
+import { t } from "~/shared/utils/i18n"
 
 interface TokenFormProps {
   onLoginSuccess?: () => void
@@ -17,9 +19,22 @@ export function TokenForm({ onLoginSuccess }: TokenFormProps) {
   const saveConfig = useStore((state) => state.saveConfig)
 
   // 本地 UI 状态
+  const [gotifyServerUrl, setGotifyServerUrl] = useState(GOTIFY_SERVER_URL)
   const [token, setToken] = useState("")
   const [showToken, setShowToken] = useState(false)
   const [saving, setSaving] = useState(false)
+
+  /**
+   * 验证 URL 格式
+   */
+  const isValidUrl = (url: string): boolean => {
+    try {
+      const parsedUrl = new URL(url)
+      return parsedUrl.protocol === "http:" || parsedUrl.protocol === "https:"
+    } catch {
+      return false
+    }
+  }
 
   /**
    * 提交登录表单
@@ -27,8 +42,20 @@ export function TokenForm({ onLoginSuccess }: TokenFormProps) {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
 
+    // 验证服务器地址
+    if (!gotifyServerUrl) {
+      alert(t("error_server_url_required"))
+      return
+    }
+
+    if (!isValidUrl(gotifyServerUrl)) {
+      alert(t("error_invalid_url"))
+      return
+    }
+
+    // 验证 Token
     if (!token) {
-      alert("Token 不能为空")
+      alert(t("error_token_required"))
       return
     }
 
@@ -36,7 +63,8 @@ export function TokenForm({ onLoginSuccess }: TokenFormProps) {
     try {
       const newConfig: Config = {
         ...config,
-        clientToken: token
+        clientToken: token,
+        gotifyUrl: gotifyServerUrl
       }
 
       // 先保存配置
@@ -51,17 +79,17 @@ export function TokenForm({ onLoginSuccess }: TokenFormProps) {
 
       if (!reconnectResponse.success) {
         console.error("[TokenForm] 重连失败:", reconnectResponse.error)
-        throw new Error(reconnectResponse.error || "连接失败")
+        throw new Error(reconnectResponse.error || t("error_connection_failed"))
       }
 
       console.log("[TokenForm] 登录成功，已建立连接")
 
-      alert("登录成功！已自动连接到 Gotify 服务器")
+      alert(t("success_login"))
       setToken("")
       // 调用成功回调，触发父组件重新加载配置
       onLoginSuccess?.()
-    } catch (error) {
-      alert(`登录失败: ${error}`)
+    } catch (error: any) {
+      alert(`${t("error_login_failed").replace("{error}", error.message || error)}`)
     } finally {
       setSaving(false)
     }
@@ -71,14 +99,28 @@ export function TokenForm({ onLoginSuccess }: TokenFormProps) {
     <form onSubmit={handleSubmit} style={styles.form}>
       <div style={styles.formGroup}>
         <label style={styles.label}>
-          客户端 Token <span style={styles.required}>*</span>
+          {t("gotify_server_label")} <span style={styles.required}>*</span>
+        </label>
+        <input
+          type="text"
+          value={gotifyServerUrl}
+          onChange={(e) => setGotifyServerUrl(e.target.value)}
+          placeholder={t("gotify_server_placeholder")}
+          style={styles.input}
+          disabled={saving}
+        />
+      </div>
+
+      <div style={styles.formGroup}>
+        <label style={styles.label}>
+          {t("client_token_label")} <span style={styles.required}>*</span>
         </label>
         <div style={styles.tokenContainer}>
           <input
             type={showToken ? "text" : "password"}
             value={token}
             onChange={(e) => setToken(e.target.value)}
-            placeholder="请输入客户端 Token"
+            placeholder={t("token_placeholder")}
             style={styles.tokenInput}
             disabled={saving}
           />
@@ -87,18 +129,16 @@ export function TokenForm({ onLoginSuccess }: TokenFormProps) {
             onClick={() => setShowToken(!showToken)}
             style={styles.toggleButton}
             disabled={saving}>
-            {showToken ? "隐藏" : "显示"}
+            {showToken ? t("hide") : t("show")}
           </button>
         </div>
       </div>
 
       <button type="submit" style={styles.submitButton} disabled={saving}>
-        {saving ? "登录中..." : "登录"}
+        {saving ? t("logging_in") : t("login")}
       </button>
 
-      <div style={styles.hint}>
-        如果您已有客户端 Token，可以直接输入进行登录
-      </div>
+      <div style={styles.hint}>{t("token_login_hint")}</div>
     </form>
   )
 }

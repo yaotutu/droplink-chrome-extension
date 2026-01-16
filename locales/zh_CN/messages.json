@@ -1,0 +1,298 @@
+{
+  "app_name": {
+    "message": "Droplink",
+    "description": "应用名称"
+  },
+  "loading": {
+    "message": "加载中...",
+    "description": "加载状态文本"
+  },
+  "open_settings": {
+    "message": "打开设置",
+    "description": "打开设置页面的按钮"
+  },
+  "please_configure_server": {
+    "message": "请先配置 Gotify 服务器",
+    "description": "未配置服务器时的警告信息"
+  },
+  "settings_title": {
+    "message": "{APP_NAME} 设置",
+    "description": "设置页面标题"
+  },
+  "version": {
+    "message": "版本 {APP_VERSION}",
+    "description": "版本号显示"
+  },
+  "logout_confirm": {
+    "message": "确定要退出登录吗？这将清除所有配置信息。",
+    "description": "退出登录确认消息"
+  },
+  "app_description": {
+    "message": "{APP_NAME} - 通过 Gotify 远程控制浏览器打开标签页",
+    "description": "应用描述"
+  },
+  "gotify_website": {
+    "message": "Gotify 官网",
+    "description": "Gotify 网站链接"
+  },
+  "github": {
+    "message": "GitHub",
+    "description": "GitHub 仓库链接"
+  },
+  "connection_status": {
+    "message": "连接状态",
+    "description": "连接状态标签"
+  },
+  "connected": {
+    "message": "已连接",
+    "description": "已连接状态"
+  },
+  "connecting": {
+    "message": "连接中...",
+    "description": "连接中状态"
+  },
+  "disconnected": {
+    "message": "未连接",
+    "description": "未连接状态"
+  },
+  "connection_failed": {
+    "message": "连接失败",
+    "description": "连接失败状态"
+  },
+  "unknown": {
+    "message": "未知",
+    "description": "未知状态"
+  },
+  "server_label": {
+    "message": "服务器：",
+    "description": "服务器标签"
+  },
+  "last_connected": {
+    "message": "最后连接：",
+    "description": "最后连接时间标签"
+  },
+  "enabled_features": {
+    "message": "启用功能",
+    "description": "启用功能标签"
+  },
+  "enabled": {
+    "message": "已启用",
+    "description": "已启用状态"
+  },
+  "disabled": {
+    "message": "已禁用",
+    "description": "已禁用状态"
+  },
+  "auto_open_tab": {
+    "message": "自动打开标签页",
+    "description": "自动打开标签页功能"
+  },
+  "notifications": {
+    "message": "通知",
+    "description": "通知功能"
+  },
+  "none": {
+    "message": "无",
+    "description": "无占位符"
+  },
+  "features_label": {
+    "message": "功能：",
+    "description": "功能标签"
+  },
+  "login_title": {
+    "message": "登录 Droplink",
+    "description": "登录页面标题"
+  },
+  "login_description": {
+    "message": "使用邮箱验证码或客户端 Token 登录",
+    "description": "登录页面描述"
+  },
+  "email_code_login": {
+    "message": "邮箱验证码登录",
+    "description": "邮箱验证码登录标签页"
+  },
+  "token_login": {
+    "message": "Token 登录",
+    "description": "Token 登录标签页"
+  },
+  "config_info": {
+    "message": "配置信息",
+    "description": "配置信息标题"
+  },
+  "logout": {
+    "message": "退出登录",
+    "description": "退出登录按钮"
+  },
+  "token_label": {
+    "message": "Token：",
+    "description": "Token 标签"
+  },
+  "error_email_required": {
+    "message": "请输入邮箱地址",
+    "description": "错误：邮箱必填"
+  },
+  "error_invalid_email": {
+    "message": "请输入有效的邮箱地址",
+    "description": "错误：无效邮箱格式"
+  },
+  "success_code_sent": {
+    "message": "验证码已发送到您的邮箱（测试模式：0000）",
+    "description": "成功：验证码已发送"
+  },
+  "error_send_code_failed": {
+    "message": "发送验证码失败: {error}",
+    "description": "错误：发送验证码失败"
+  },
+  "error_code_required": {
+    "message": "请输入验证码",
+    "description": "错误：验证码必填"
+  },
+  "success_register": {
+    "message": "注册成功！已自动连接到 Gotify 服务器",
+    "description": "成功：注册消息"
+  },
+  "success_login": {
+    "message": "登录成功！已自动连接到 Gotify 服务器",
+    "description": "成功：登录消息"
+  },
+  "error_login_failed": {
+    "message": "登录失败: {error}",
+    "description": "错误：登录失败"
+  },
+  "email_label": {
+    "message": "邮箱地址 *",
+    "description": "邮箱地址标签"
+  },
+  "verification_code_label": {
+    "message": "验证码 *",
+    "description": "验证码标签"
+  },
+  "email_placeholder": {
+    "message": "user@example.com",
+    "description": "邮箱输入框占位符"
+  },
+  "code_placeholder": {
+    "message": "请输入验证码",
+    "description": "验证码输入框占位符"
+  },
+  "sending": {
+    "message": "发送中...",
+    "description": "发送中按钮状态"
+  },
+  "send_code": {
+    "message": "发送验证码",
+    "description": "发送验证码按钮"
+  },
+  "logging_in": {
+    "message": "登录中...",
+    "description": "登录中按钮状态"
+  },
+  "login": {
+    "message": "登录",
+    "description": "登录按钮"
+  },
+  "email_code_hint": {
+    "message": "输入邮箱后点击'发送验证码'，验证码将发送到您的邮箱（测试模式下验证码固定为 0000）",
+    "description": "邮箱验证码登录提示"
+  },
+  "error_token_required": {
+    "message": "Token 不能为空",
+    "description": "错误：Token 必填"
+  },
+  "error_connection_failed": {
+    "message": "连接失败",
+    "description": "错误：连接失败"
+  },
+  "client_token_label": {
+    "message": "客户端 Token *",
+    "description": "客户端 Token 标签"
+  },
+  "token_placeholder": {
+    "message": "请输入客户端 Token",
+    "description": "Token 输入框占位符"
+  },
+  "hide": {
+    "message": "隐藏",
+    "description": "隐藏按钮"
+  },
+  "show": {
+    "message": "显示",
+    "description": "显示按钮"
+  },
+  "token_login_hint": {
+    "message": "如果您已有客户端 Token，可以直接输入进行登录",
+    "description": "Token 登录提示"
+  },
+  "feature_settings": {
+    "message": "功能设置",
+    "description": "功能设置标题"
+  },
+  "show_all_notifications": {
+    "message": "显示所有通知",
+    "description": "显示所有通知开关"
+  },
+  "show_all_notifications_desc": {
+    "message": "作为 Gotify 客户端接收并显示所有消息通知",
+    "description": "显示所有通知描述"
+  },
+  "open_tab_notification": {
+    "message": "打开标签页时显示通知",
+    "description": "打开标签页通知开关"
+  },
+  "open_tab_notification_desc": {
+    "message": "成功打开标签页后显示确认通知",
+    "description": "打开标签页通知描述"
+  },
+  "notification_filter": {
+    "message": "通知过滤",
+    "description": "通知过滤标题"
+  },
+  "standard_gotify_service": {
+    "message": "这是标准的 Gotify 服务，会接收所有 Gotify 消息。",
+    "description": "标准服务描述"
+  },
+  "default_all_messages": {
+    "message": "默认展示所有消息，可以选择启用过滤规则来控制哪些消息需要展示。",
+    "description": "默认行为描述"
+  },
+  "enable_filter_rules": {
+    "message": "启用过滤规则",
+    "description": "启用过滤规则开关"
+  },
+  "enable_filter_rules_desc": {
+    "message": "开启后可以根据规则控制哪些消息显示通知",
+    "description": "启用过滤规则描述"
+  },
+  "filter_open_tab_messages": {
+    "message": "过滤 OpenTab 消息",
+    "description": "过滤打开标签页消息开关"
+  },
+  "filter_open_tab_messages_desc": {
+    "message": "不显示已自动打开标签页的消息通知",
+    "description": "过滤打开标签页消息描述"
+  },
+  "auth_server_label": {
+    "message": "认证服务器地址 *",
+    "description": "认证服务器地址标签"
+  },
+  "auth_server_placeholder": {
+    "message": "http://111.228.1.24:3600",
+    "description": "认证服务器地址占位符"
+  },
+  "gotify_server_label": {
+    "message": "Gotify 服务器地址 *",
+    "description": "Gotify 服务器地址标签"
+  },
+  "gotify_server_placeholder": {
+    "message": "http://111.228.1.24:2345",
+    "description": "Gotify 服务器地址占位符"
+  },
+  "error_server_url_required": {
+    "message": "服务器地址不能为空",
+    "description": "错误：服务器地址必填"
+  },
+  "error_invalid_url": {
+    "message": "请输入有效的服务器地址（http:// 或 https://）",
+    "description": "错误：无效的 URL 格式"
+  }
+}

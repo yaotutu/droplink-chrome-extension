@@ -37,12 +37,17 @@ async function fetchWithTimeout(
 /**
  * 发送验证码到邮箱
  * @param email 邮箱地址
+ * @param authServerUrl 认证服务器地址（可选，默认使用 AUTH_SERVER_URL）
  * @throws 发送失败时抛出错误
  */
-export async function sendVerificationCode(email: string): Promise<void> {
-  console.log("[Auth] 发送验证码到:", email)
+export async function sendVerificationCode(
+  email: string,
+  authServerUrl?: string
+): Promise<void> {
+  const serverUrl = authServerUrl || AUTH_SERVER_URL
+  console.log("[Auth] 发送验证码到:", email, "服务器:", serverUrl)
 
-  const url = new URL("/api/auth/send-code", AUTH_SERVER_URL).href
+  const url = new URL("/api/auth/send-code", serverUrl).href
 
   try {
     const response = await fetchWithTimeout(url, {
@@ -79,20 +84,27 @@ export async function sendVerificationCode(email: string): Promise<void> {
  * 使用邮箱和验证码登录/注册（统一接口）
  * @param email 邮箱地址
  * @param code 验证码
- * @returns 包含 clientToken、appToken 和 isNewUser 的对象
+ * @param authServerUrl 认证服务器地址（可选，默认使用 AUTH_SERVER_URL）
+ * @param gotifyUrl Gotify 服务器地址（用于保存到配置）
+ * @returns 包含 clientToken、appToken、isNewUser 和 gotifyUrl 的对象
  * @throws 验证失败时抛出错误
  */
 export async function verifyEmailCode(
   email: string,
-  code: string
+  code: string,
+  authServerUrl?: string,
+  gotifyUrl?: string
 ): Promise<{
   clientToken: string
   appToken: string
   isNewUser: boolean
+  gotifyUrl: string
 }> {
-  console.log("[Auth] 验证邮箱:", email)
+  const serverUrl = authServerUrl || AUTH_SERVER_URL
+  const finalGotifyUrl = gotifyUrl || serverUrl
+  console.log("[Auth] 验证邮箱:", email, "认证服务器:", serverUrl)
 
-  const url = new URL("/api/auth/verify", AUTH_SERVER_URL).href
+  const url = new URL("/api/auth/verify", serverUrl).href
 
   try {
     const response = await fetchWithTimeout(url, {
@@ -134,7 +146,8 @@ export async function verifyEmailCode(
     return {
       clientToken: data.user.tokens.clientToken,
       appToken: data.user.tokens.appToken,
-      isNewUser: data.isNewUser
+      isNewUser: data.isNewUser,
+      gotifyUrl: finalGotifyUrl
     }
   } catch (error: any) {
     console.error("[Auth] 登录异常:", error)

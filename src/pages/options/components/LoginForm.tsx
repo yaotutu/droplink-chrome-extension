@@ -6,6 +6,7 @@ import { useState } from "react"
 import { useStore } from "~/shared/store"
 import { EmailCodeForm } from "./EmailCodeForm"
 import { TokenForm } from "./TokenForm"
+import { t } from "~/shared/utils/i18n"
 
 export type LoginMode = "email_code" | "token"
 
@@ -23,10 +24,8 @@ export function LoginForm({ onLoginSuccess }: LoginFormProps) {
 
   return (
     <div style={styles.container}>
-      <h2 style={styles.title}>登录 Droplink</h2>
-      <p style={styles.description}>
-        使用邮箱验证码或客户端 Token 登录
-      </p>
+      <h2 style={styles.title}>{t("login_title")}</h2>
+      <p style={styles.description}>{t("login_description")}</p>
 
       {/* 登录模式切换 */}
       <div style={styles.tabs}>
@@ -36,7 +35,7 @@ export function LoginForm({ onLoginSuccess }: LoginFormProps) {
             ...styles.tab,
             ...(loginMode === "email_code" ? styles.tabActive : {})
           }}>
-          邮箱验证码登录
+          {t("email_code_login")}
         </button>
         <button
           onClick={() => setLoginMode("token")}
@@ -44,7 +43,7 @@ export function LoginForm({ onLoginSuccess }: LoginFormProps) {
             ...styles.tab,
             ...(loginMode === "token" ? styles.tabActive : {})
           }}>
-          Token 登录
+          {t("token_login")}
         </button>
       </div>
 

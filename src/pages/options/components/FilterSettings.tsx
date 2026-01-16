@@ -6,6 +6,7 @@ import { useNotificationFilters } from "../hooks/useNotificationFilters"
 import { Switch } from "~/shared/components/Switch"
 import { RuleList } from "./RuleList"
 import { AddRuleForm } from "./AddRuleForm"
+import { t } from "~/shared/utils/i18n"
 
 export function FilterSettings() {
   const {
@@ -25,20 +26,18 @@ export function FilterSettings() {
 
   return (
     <div style={styles.card}>
-      <h3 style={styles.title}>通知过滤</h3>
+      <h3 style={styles.title}>{t("notification_filter")}</h3>
       <p style={styles.description}>
-        这是标准的 Gotify 服务，会接收所有 Gotify 消息。
+        {t("standard_gotify_service")}
         <br />
-        默认展示所有消息，可以选择启用过滤规则来控制哪些消息需要展示。
+        {t("default_all_messages")}
       </p>
 
       {/* 启用过滤 */}
       <div style={styles.toggleRow}>
         <div style={styles.toggleInfo}>
-          <div style={styles.toggleLabel}>启用过滤规则</div>
-          <div style={styles.toggleDescription}>
-            开启后可以根据规则控制哪些消息显示通知
-          </div>
+          <div style={styles.toggleLabel}>{t("enable_filter_rules")}</div>
+          <div style={styles.toggleDescription}>{t("enable_filter_rules_desc")}</div>
         </div>
         <Switch checked={filterEnabled} onChange={toggleFilterEnabled} />
       </div>
@@ -51,10 +50,8 @@ export function FilterSettings() {
           {/* 过滤 OpenTab 消息 */}
           <div style={styles.toggleRow}>
             <div style={styles.toggleInfo}>
-              <div style={styles.toggleLabel}>过滤 OpenTab 消息</div>
-              <div style={styles.toggleDescription}>
-                不显示已自动打开标签页的消息通知
-              </div>
+              <div style={styles.toggleLabel}>{t("filter_open_tab_messages")}</div>
+              <div style={styles.toggleDescription}>{t("filter_open_tab_messages_desc")}</div>
             </div>
             <Switch checked={filterOpenTab} onChange={toggleFilterOpenTab} />
           </div>

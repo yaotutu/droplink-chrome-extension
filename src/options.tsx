@@ -9,6 +9,7 @@ import { LoginForm } from "~/pages/options/components/LoginForm"
 import { ConfigCard } from "~/pages/options/components/ConfigCard"
 import { FeatureToggles } from "~/pages/options/components/FeatureToggles"
 import { APP_NAME, APP_VERSION } from "~/shared/utils/constants"
+import { t, tWithPlaceholders } from "~/shared/utils/i18n"
 
 function OptionsPage() {
   // 从 store 读取状态
@@ -34,7 +35,7 @@ function OptionsPage() {
    * 退出登录
    */
   const handleLogout = async () => {
-    if (confirm("确定要退出登录吗？这将清除所有配置信息。")) {
+    if (confirm(t("logout_confirm"))) {
       await resetConfig()
       setIsLoggedIn(false)
     }
@@ -50,7 +51,7 @@ function OptionsPage() {
   if (loading) {
     return (
       <div style={styles.container}>
-        <div style={styles.loading}>加载中...</div>
+        <div style={styles.loading}>{t("loading")}</div>
       </div>
     )
   }
@@ -60,8 +61,8 @@ function OptionsPage() {
       {/* 页面标题 */}
       <div style={styles.header}>
         <div>
-          <h1 style={styles.title}>{APP_NAME} 设置</h1>
-          <p style={styles.version}>版本 {APP_VERSION}</p>
+          <h1 style={styles.title}>{tWithPlaceholders("settings_title", { APP_NAME })}</h1>
+          <p style={styles.version}>{tWithPlaceholders("version", { APP_VERSION })}</p>
         </div>
       </div>
 
@@ -81,16 +82,14 @@ function OptionsPage() {
 
       {/* 页脚信息 */}
       <div style={styles.footer}>
-        <p style={styles.footerText}>
-          {APP_NAME} - 通过 Gotify 远程控制浏览器打开标签页
-        </p>
+        <p style={styles.footerText}>{tWithPlaceholders("app_description", { APP_NAME })}</p>
         <p style={styles.footerLinks}>
           <a
             href="https://github.com/gotify"
             target="_blank"
             rel="noopener noreferrer"
             style={styles.link}>
-            Gotify 官网
+            {t("gotify_website")}
           </a>
           {" · "}
           <a
@@ -98,7 +97,7 @@ function OptionsPage() {
             target="_blank"
             rel="noopener noreferrer"
             style={styles.link}>
-            GitHub
+            {t("github")}
           </a>
         </p>
       </div>

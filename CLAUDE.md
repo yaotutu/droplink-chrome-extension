@@ -6,6 +6,13 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 **Droplink** 是一个基于 [Plasmo](https://docs.plasmo.com/) 框架构建的 Chrome 浏览器扩展项目。
 
+**项目信息**：
+- **版本**: 1.0.0
+- **名称**: Droplink - Cross-Device Link Sharing
+- **作者**: yaotutu
+- **GitHub**: https://github.com/yaotutu/droplink
+- **Chrome 最低版本**: 116
+
 ### 核心功能
 
 通过 WebSocket 连接到 Gotify 服务器，实时监听消息推送，根据消息内容自动打开指定的网页标签页。
@@ -27,6 +34,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - ✅ 多种登录方式（邮箱验证码 + Token 直连）
 - ✅ 配置管理界面（Options 页面）
 - ✅ 状态可视化（扩展图标徽章）
+- ✅ 国际化支持（i18n）：英语 + 简体中文
 
 ---
 
@@ -99,7 +107,8 @@ droplink-chrome-extension/
 │   │   ├── utils/
 │   │   │   ├── constants.ts   # DEFAULT_CONFIG 等常量
 │   │   │   ├── validators.ts  # 验证函数
-│   │   │   └── timeout.ts     # 超时工具
+│   │   │   ├── timeout.ts     # 超时工具
+│   │   │   └── i18n.ts        # 国际化工具函数
 │   │   └── types/
 │   │       └── index.ts       # TypeScript 类型定义
 │   │
@@ -114,6 +123,12 @@ droplink-chrome-extension/
 │       ├── storage/           # 配置存储
 │       ├── tabs/              # 标签页管理
 │       └── notifications/     # 通知管理
+│
+├── locales/                   # 国际化翻译文件
+│   ├── en/
+│   │   └── messages.json      # 英文翻译
+│   └── zh_CN/
+│       └── messages.json      # 简体中文翻译
 │
 ├── assets/                    # 静态资源（图标等）
 ├── docs/                      # 文档
@@ -235,6 +250,45 @@ droplink-chrome-extension/
 - **options.tsx**: Options 页面入口（约 120 行）
 - 通过 Plasmo 的 `srcDir` 配置识别为入口文件
 
+### 11. src/shared/utils/i18n.ts - 国际化工具
+- 提供 `t()` 函数用于翻译文本
+- 提供 `tWithPlaceholders()` 函数支持带占位符的翻译
+- 使用 Chrome i18n API (`chrome.i18n.getMessage`)
+- 类型安全的翻译键定义 (`I18nKey` 类型)
+
+**翻译文件位置**：
+- `locales/en/messages.json`: 英文翻译
+- `locales/zh_CN/messages.json`: 简体中文翻译
+
+**使用示例**：
+```typescript
+import { t } from "~/shared/utils/i18n"
+
+// 简单翻译
+const appName = t("app_name") // 返回 "Droplink"
+
+// 带降级的翻译
+const text = t("unknown_key", "默认文本")
+
+// 带占位符的翻译（messages.json 中定义为 "Hello {name}!"）
+import { tWithPlaceholders } from "~/shared/utils/i18n"
+const greeting = tWithPlaceholders("greeting", { name: "World" })
+```
+
+**翻译文件格式**：
+```json
+{
+  "app_name": {
+    "message": "Droplink",
+    "description": "Application name"
+  },
+  "settings_title": {
+    "message": "{APP_NAME} Settings",
+    "description": "Settings page title"
+  }
+}
+```
+
 ---
 
 ## 架构特点
@@ -317,10 +371,16 @@ Prettier 配置了自动导入排序（使用 `@ianvs/prettier-plugin-sort-impor
       "tabs",           // 创建和管理标签页
       "notifications"   // 显示错误通知
     ],
-    "minimum_chrome_version": "116"
+    "minimum_chrome_version": "116",
+    "default_locale": "en"  // 默认语言为英语
   }
 }
 ```
+
+**语言切换**：
+- 扩展会根据浏览器的语言设置自动选择对应的翻译
+- 目前支持：英语 (en)、简体中文 (zh_CN)
+- 如果浏览器语言不在支持列表中，会使用 `default_locale` (英语)
 
 ---
 
@@ -584,6 +644,49 @@ send_droplink(
 3. 在 Options 页面添加对应的 UI 控件
 4. 更新相关的业务逻辑
 
+#### 添加新的翻译文本：
+
+1. 在 `src/shared/utils/i18n.ts` 中的 `I18nKey` 类型添加新的键名
+2. 在 `locales/en/messages.json` 中添加英文翻译
+3. 在 `locales/zh_CN/messages.json` 中添加中文翻译
+4. 在组件中使用 `t("your_key")` 调用翻译
+
+**示例**：
+```typescript
+// 1. 在 i18n.ts 中添加类型
+export type I18nKey =
+  | "app_name"
+  | "new_feature_title"  // 新增
+  | ...
+
+// 2. 在 locales/en/messages.json 中添加
+{
+  "new_feature_title": {
+    "message": "New Feature",
+    "description": "Title for new feature"
+  }
+}
+
+// 3. 在 locales/zh_CN/messages.json 中添加
+{
+  "new_feature_title": {
+    "message": "新功能",
+    "description": "新功能标题"
+  }
+}
+
+// 4. 在组件中使用
+import { t } from "~/shared/utils/i18n"
+const title = t("new_feature_title")
+```
+
+#### 添加新的语言支持：
+
+1. 在 `locales/` 目录下创建新的语言目录（如 `ja/` 代表日语）
+2. 复制 `en/messages.json` 到新目录
+3. 翻译所有文本内容
+4. 测试扩展在该语言环境下的显示效果
+
 ---
 
 ## 常见问题
@@ -660,6 +763,7 @@ Gotify 有两种 Token：
 - [Plasmo 官方文档](https://docs.plasmo.com/)
 - [Gotify 官方文档](https://gotify.net/)
 - [Chrome Extension API](https://developer.chrome.com/docs/extensions/reference/)
+- [Chrome i18n API](https://developer.chrome.com/docs/extensions/reference/api/i18n)
 - [WebSocket API](https://developer.mozilla.org/en-US/docs/Web/API/WebSocket)
 - [TypeScript 官方文档](https://www.typescriptlang.org/)
 - [React 官方文档](https://react.dev/)
