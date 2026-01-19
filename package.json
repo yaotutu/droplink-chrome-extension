@@ -28,7 +28,6 @@
   "manifest": {
     "permissions": [
       "storage",
-      "tabs",
       "notifications"
     ],
     "minimum_chrome_version": "116",
