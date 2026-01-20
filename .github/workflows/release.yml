@@ -1,6 +1,7 @@
-name: Release
+name: Versioned Release
 
 # 触发条件：创建以 v 开头的 tag（如 v1.0.0）
+# 用于创建特定版本的 Release（不会覆盖 dev-latest 和 main-latest）
 on:
   push:
     tags:
@@ -81,8 +82,8 @@ jobs:
           VERSION="${{ steps.version.outputs.version }}"
           mv build/chrome-mv3-prod.zip build/droplink-v${VERSION}.zip
 
-      # 11. 创建 Release
-      - name: Create Release
+      # 11. 创建版本化 Release（不会覆盖 dev-latest 和 main-latest）
+      - name: Create Versioned Release
         uses: softprops/action-gh-release@v1
         with:
           files: build/droplink-v${{ steps.version.outputs.version }}.zip
@@ -104,5 +105,11 @@ jobs:
             - 版本号: ${{ steps.version.outputs.tag }}
             - 构建时间: ${{ github.event.head_commit.timestamp }}
             - Commit: ${{ github.sha }}
+
+            ---
+
+            ### 🔗 获取最新版本
+            - [Dev 开发版 (最新)](../../releases/tag/dev-latest)
+            - [正式版 (最新稳定版)](../../releases/tag/main-latest)
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
