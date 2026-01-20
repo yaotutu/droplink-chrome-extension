@@ -294,5 +294,45 @@
   "error_invalid_url": {
     "message": "Please enter a valid server URL (http:// or https://)",
     "description": "Error: Invalid URL format"
+  },
+  "history_sync_title": {
+    "message": "History Message Recovery",
+    "description": "History sync settings title"
+  },
+  "enable_history_sync": {
+    "message": "Enable history message recovery",
+    "description": "Enable history sync toggle"
+  },
+  "fetch_history_limit": {
+    "message": "Fetch history message count",
+    "description": "Fetch history limit label"
+  },
+  "max_open_tabs": {
+    "message": "Maximum open tabs",
+    "description": "Maximum open tabs label"
+  },
+  "batch_open_interval": {
+    "message": "Batch open interval (ms)",
+    "description": "Batch open interval label"
+  },
+  "show_batch_notification": {
+    "message": "Show completion notification",
+    "description": "Show batch notification toggle"
+  },
+  "history_sync_auto_hint": {
+    "message": "Sync will be triggered automatically when WebSocket connects successfully",
+    "description": "Auto sync hint"
+  },
+  "history_sync_success": {
+    "message": "History Recovered",
+    "description": "History sync success notification title"
+  },
+  "history_sync_success_message": {
+    "message": "Opened {count} links",
+    "description": "History sync success notification message"
+  },
+  "history_sync_failed": {
+    "message": "History Sync Failed",
+    "description": "History sync error notification title"
   }
 }

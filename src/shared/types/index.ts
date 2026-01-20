@@ -14,6 +14,16 @@ export interface Config {
   openTabNotification: boolean
   /** 显示所有 Gotify 通知 */
   showAllNotifications: boolean
+  /** 是否启用历史消息恢复（默认 true） */
+  enableHistorySync: boolean
+  /** 拉取历史消息数量（默认 100，范围 1-200） */
+  fetchHistoryLimit: number
+  /** 最大打开标签页数量（默认 10，范围 1-50） */
+  maxOpenTabs: number
+  /** 批量打开间隔（毫秒，默认 300） */
+  batchOpenInterval: number
+  /** 是否显示批量打开完成通知（默认 true） */
+  showBatchNotification: boolean
 }
 
 /**

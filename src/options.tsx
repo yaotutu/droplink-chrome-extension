@@ -8,6 +8,7 @@ import { isConfigValid } from "~/core/storage"
 import { LoginForm } from "~/pages/options/components/LoginForm"
 import { ConfigCard } from "~/pages/options/components/ConfigCard"
 import { FeatureToggles } from "~/pages/options/components/FeatureToggles"
+import { HistorySyncSettings } from "~/pages/options/components/HistorySyncSettings"
 import { APP_NAME, APP_VERSION } from "~/shared/utils/constants"
 import { t, tWithPlaceholders } from "~/shared/utils/i18n"
 
@@ -76,6 +77,7 @@ function OptionsPage() {
           <>
             <ConfigCard config={config} onLogout={handleLogout} />
             <FeatureToggles />
+            <HistorySyncSettings />
           </>
         )}
       </div>

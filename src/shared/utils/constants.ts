@@ -21,7 +21,12 @@ export const DEFAULT_CONFIG: Config = {
   gotifyUrl: GOTIFY_SERVER_URL,
   clientToken: "",
   openTabNotification: false,
-  showAllNotifications: false
+  showAllNotifications: false,
+  enableHistorySync: true, // 启用历史消息恢复
+  fetchHistoryLimit: 100, // 拉取 100 条历史消息
+  maxOpenTabs: 10, // 最多打开 10 个标签页
+  batchOpenInterval: 300, // 批量打开间隔 300ms
+  showBatchNotification: true // 显示完成通知
 }
 
 /**

@@ -8,6 +8,7 @@ import { ConnectionStatus } from "~/shared/types"
 import { GotifyClient } from "~/core/gotify/client"
 import { MessageRouter } from "~/core/messaging/router"
 import { IconManager } from "./icon-manager"
+import type { HistorySyncManager } from "./history-sync-manager"
 
 export class ConnectionManager {
   private client: GotifyClient | null = null
@@ -17,7 +18,10 @@ export class ConnectionManager {
   }
   private iconManager: IconManager
 
-  constructor(private router: MessageRouter) {
+  constructor(
+    private router: MessageRouter,
+    private historySyncManager?: HistorySyncManager // 可选依赖
+  ) {
     this.iconManager = new IconManager()
     // 初始化时更新图标
     this.updateIcon()
@@ -49,6 +53,14 @@ export class ConnectionManager {
       if (status === ConnectionStatus.CONNECTED) {
         this.statusInfo.lastConnected = new Date().toISOString()
         this.statusInfo.error = undefined
+
+        // ✅ 核心触发点：WebSocket 连接成功时触发历史同步
+        if (this.historySyncManager) {
+          console.log("[ConnectionManager] WebSocket 连接成功，触发历史同步")
+          this.historySyncManager.sync().catch((error) => {
+            console.error("[ConnectionManager] 历史同步失败:", error)
+          })
+        }
       } else if (status === ConnectionStatus.ERROR) {
         this.statusInfo.error = "连接失败"
       }

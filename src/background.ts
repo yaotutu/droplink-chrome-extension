@@ -5,17 +5,22 @@
 
 import type { Config } from "~/shared/types"
 import { getConfig, isConfigValid, onConfigChange } from "~/core/storage"
+import { setInstallTime } from "~/core/storage/history"
 import { MessageRouter } from "~/core/messaging/router"
 import { OpenTabHandler } from "~/core/messaging/handlers"
 import { ConnectionManager } from "./background/connection-manager"
 import { RuntimeMessageHandler } from "./background/runtime-message-handler"
+import { HistorySyncManager } from "./background/history-sync-manager"
 
 // 初始化路由器
 const router = new MessageRouter()
 router.register(new OpenTabHandler())
 
-// 初始化连接管理器
-const connectionManager = new ConnectionManager(router)
+// 初始化历史同步管理器
+const historySyncManager = new HistorySyncManager(router)
+
+// 初始化连接管理器（传递 historySyncManager）
+const connectionManager = new ConnectionManager(router, historySyncManager)
 
 // 初始化消息处理器
 const messageHandler = new RuntimeMessageHandler(connectionManager)
@@ -117,6 +122,18 @@ chrome.runtime.onStartup.addListener(() => {
  */
 chrome.runtime.onInstalled.addListener((details) => {
   console.log("[Background] 扩展已安装/更新:", details.reason)
+
+  // 如果是首次安装，记录安装时间
+  if (details.reason === "install") {
+    const installTime = Date.now()
+    console.log(
+      `[Background] 首次安装，记录安装时间: ${new Date(installTime).toISOString()}`
+    )
+    setInstallTime(installTime).catch((error) => {
+      console.error("[Background] 记录安装时间失败:", error)
+    })
+  }
+
   initialize()
 })
 

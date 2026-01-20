@@ -294,5 +294,45 @@
   "error_invalid_url": {
     "message": "请输入有效的服务器地址（http:// 或 https://）",
     "description": "错误：无效的 URL 格式"
+  },
+  "history_sync_title": {
+    "message": "历史消息恢复",
+    "description": "历史同步设置标题"
+  },
+  "enable_history_sync": {
+    "message": "启用历史消息恢复",
+    "description": "启用历史同步开关"
+  },
+  "fetch_history_limit": {
+    "message": "拉取历史消息数量",
+    "description": "拉取历史消息数量标签"
+  },
+  "max_open_tabs": {
+    "message": "最大打开标签页数量",
+    "description": "最大打开标签页数量标签"
+  },
+  "batch_open_interval": {
+    "message": "批量打开间隔 (毫秒)",
+    "description": "批量打开间隔标签"
+  },
+  "show_batch_notification": {
+    "message": "显示完成通知",
+    "description": "显示批量通知开关"
+  },
+  "history_sync_auto_hint": {
+    "message": "同步会在 WebSocket 连接成功时自动触发",
+    "description": "自动同步提示"
+  },
+  "history_sync_success": {
+    "message": "历史消息已恢复",
+    "description": "历史同步成功通知标题"
+  },
+  "history_sync_success_message": {
+    "message": "已打开 {count} 个链接",
+    "description": "历史同步成功通知消息"
+  },
+  "history_sync_failed": {
+    "message": "历史同步失败",
+    "description": "历史同步错误通知标题"
   }
 }

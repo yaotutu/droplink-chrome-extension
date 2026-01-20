@@ -28,7 +28,17 @@ export async function getConfig(): Promise<Config> {
       openTabNotification:
         config.openTabNotification ?? DEFAULT_CONFIG.openTabNotification,
       showAllNotifications:
-        config.showAllNotifications ?? DEFAULT_CONFIG.showAllNotifications
+        config.showAllNotifications ?? DEFAULT_CONFIG.showAllNotifications,
+      // 历史同步相关配置（新增）
+      enableHistorySync:
+        config.enableHistorySync ?? DEFAULT_CONFIG.enableHistorySync,
+      fetchHistoryLimit:
+        config.fetchHistoryLimit ?? DEFAULT_CONFIG.fetchHistoryLimit,
+      maxOpenTabs: config.maxOpenTabs ?? DEFAULT_CONFIG.maxOpenTabs,
+      batchOpenInterval:
+        config.batchOpenInterval ?? DEFAULT_CONFIG.batchOpenInterval,
+      showBatchNotification:
+        config.showBatchNotification ?? DEFAULT_CONFIG.showBatchNotification
     }
   } catch (error) {
     console.error("[Storage] 读取配置失败:", error)
