@@ -96,9 +96,18 @@ jobs:
           path: output/droplink-dev-${{ env.VERSION_NAME }}.zip
           retention-days: 30
 
+      # 创建或更新 dev-latest tag (强制覆盖)
+      - name: Create or Update dev-latest tag
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git tag -f dev-latest
+          git push -f origin dev-latest
+          echo "✅ dev-latest tag 已创建/更新"
+
       # 自动发布到 GitHub Release (覆盖式发布 dev-latest)
       - name: Create or Update Dev Release
-        uses: softprops/action-gh-release@v1
+        uses: softprops/action-gh-release@v2
         with:
           tag_name: dev-latest
           name: "🚀 Dev 开发版 (最新)"
@@ -134,7 +143,9 @@ jobs:
             ${{ github.event.head_commit.message }}
           files: output/droplink-dev-${{ env.VERSION_NAME }}.zip
           draft: false
-          prerelease: true  # 标记为预发布版本
+          prerelease: true
+          make_latest: false
+          generate_release_notes: false
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
