@@ -7,6 +7,7 @@ import { useStore } from "~/shared/store"
 import { isConfigValid } from "~/core/storage"
 import { LoginForm } from "~/pages/options/components/LoginForm"
 import { ConfigCard } from "~/pages/options/components/ConfigCard"
+import { QRLoginCard } from "~/pages/options/components/QRLoginCard"
 import { FeatureToggles } from "~/pages/options/components/FeatureToggles"
 import { HistorySyncSettings } from "~/pages/options/components/HistorySyncSettings"
 import { APP_NAME, APP_VERSION } from "~/shared/utils/constants"
@@ -78,6 +79,7 @@ function OptionsPage() {
           /* 已登录：显示配置和功能设置 */
           <>
             <ConfigCard config={config} onLogout={handleLogout} />
+            <QRLoginCard />
             <FeatureToggles />
             <HistorySyncSettings />
           </>

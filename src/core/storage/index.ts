@@ -25,6 +25,7 @@ export async function getConfig(): Promise<Config> {
     return {
       gotifyUrl: config.gotifyUrl || DEFAULT_CONFIG.gotifyUrl,
       clientToken: config.clientToken || DEFAULT_CONFIG.clientToken,
+      appToken: config.appToken || DEFAULT_CONFIG.appToken,
       openTabNotification:
         config.openTabNotification ?? DEFAULT_CONFIG.openTabNotification,
       showAllNotifications:

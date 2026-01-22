@@ -338,5 +338,21 @@
   "history_sync_failed": {
     "message": "历史同步失败",
     "description": "历史同步错误通知标题"
+  },
+  "qr_login_title": {
+    "message": "二维码登录",
+    "description": "二维码登录卡片标题"
+  },
+  "qr_login_description": {
+    "message": "使用移动设备扫描此二维码快速配置 Droplink",
+    "description": "二维码登录描述"
+  },
+  "qr_login_hint": {
+    "message": "二维码包含服务器地址和 Token 信息，请勿在公共场所展示",
+    "description": "二维码安全提示"
+  },
+  "qr_login_incomplete_config": {
+    "message": "配置信息不完整，请先登录以生成二维码",
+    "description": "配置不完整时的警告"
   }
 }

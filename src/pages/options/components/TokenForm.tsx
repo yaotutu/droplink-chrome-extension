@@ -20,8 +20,10 @@ export function TokenForm({ onLoginSuccess }: TokenFormProps) {
 
   // 本地 UI 状态
   const [gotifyServerUrl, setGotifyServerUrl] = useState(GOTIFY_SERVER_URL)
-  const [token, setToken] = useState("")
-  const [showToken, setShowToken] = useState(false)
+  const [clientToken, setClientToken] = useState("")
+  const [appToken, setAppToken] = useState("")
+  const [showClientToken, setShowClientToken] = useState(false)
+  const [showAppToken, setShowAppToken] = useState(false)
   const [saving, setSaving] = useState(false)
 
   /**
@@ -53,9 +55,15 @@ export function TokenForm({ onLoginSuccess }: TokenFormProps) {
       return
     }
 
-    // 验证 Token
-    if (!token) {
+    // 验证 Client Token
+    if (!clientToken) {
       alert(t("error_token_required"))
+      return
+    }
+
+    // 验证 App Token
+    if (!appToken) {
+      alert("应用 Token 不能为空")
       return
     }
 
@@ -63,7 +71,8 @@ export function TokenForm({ onLoginSuccess }: TokenFormProps) {
     try {
       const newConfig: Config = {
         ...config,
-        clientToken: token,
+        clientToken: clientToken,
+        appToken: appToken,
         gotifyUrl: gotifyServerUrl
       }
 
@@ -74,7 +83,8 @@ export function TokenForm({ onLoginSuccess }: TokenFormProps) {
       console.log("[TokenForm] 配置已保存，等待自动连接...")
 
       alert(t("success_login"))
-      setToken("")
+      setClientToken("")
+      setAppToken("")
       // 调用成功回调，触发父组件重新加载配置
       onLoginSuccess?.()
     } catch (error: any) {
@@ -106,19 +116,42 @@ export function TokenForm({ onLoginSuccess }: TokenFormProps) {
         </label>
         <div style={styles.tokenContainer}>
           <input
-            type={showToken ? "text" : "password"}
-            value={token}
-            onChange={(e) => setToken(e.target.value)}
+            type={showClientToken ? "text" : "password"}
+            value={clientToken}
+            onChange={(e) => setClientToken(e.target.value)}
             placeholder={t("token_placeholder")}
             style={styles.tokenInput}
             disabled={saving}
           />
           <button
             type="button"
-            onClick={() => setShowToken(!showToken)}
+            onClick={() => setShowClientToken(!showClientToken)}
             style={styles.toggleButton}
             disabled={saving}>
-            {showToken ? t("hide") : t("show")}
+            {showClientToken ? t("hide") : t("show")}
+          </button>
+        </div>
+      </div>
+
+      <div style={styles.formGroup}>
+        <label style={styles.label}>
+          应用 Token <span style={styles.required}>*</span>
+        </label>
+        <div style={styles.tokenContainer}>
+          <input
+            type={showAppToken ? "text" : "password"}
+            value={appToken}
+            onChange={(e) => setAppToken(e.target.value)}
+            placeholder="从 Gotify Apps 页面获取"
+            style={styles.tokenInput}
+            disabled={saving}
+          />
+          <button
+            type="button"
+            onClick={() => setShowAppToken(!showAppToken)}
+            style={styles.toggleButton}
+            disabled={saving}>
+            {showAppToken ? t("hide") : t("show")}
           </button>
         </div>
       </div>

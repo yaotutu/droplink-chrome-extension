@@ -20,6 +20,7 @@ export const GOTIFY_SERVER_URL = "http://111.228.1.24:2345"
 export const DEFAULT_CONFIG: Config = {
   gotifyUrl: GOTIFY_SERVER_URL,
   clientToken: "",
+  appToken: "",
   openTabNotification: false,
   showAllNotifications: false,
   enableHistorySync: true, // 启用历史消息恢复

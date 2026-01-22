@@ -8,8 +8,10 @@
 export interface Config {
   /** Gotify 服务器地址，如 "https://gotify.example.com" */
   gotifyUrl: string
-  /** 客户端 Token（用于 WebSocket 连接） */
+  /** 客户端 Token（用于 WebSocket 连接，接收消息） */
   clientToken: string
+  /** 应用 Token（用于 HTTP API，发送消息） */
+  appToken: string
   /** 打开标签页时是否显示通知 */
   openTabNotification: boolean
   /** 显示所有 Gotify 通知 */
@@ -178,3 +180,26 @@ export interface HookContext {
  * 钩子处理函数
  */
 export type HookFn = (context: HookContext) => void | Promise<void>
+
+/**
+ * 二维码登录数据结构
+ */
+export interface QRLoginData {
+  /** 数据格式版本 */
+  version: string
+  /** 数据类型标识 */
+  type: "droplink_qr_login"
+  /** 生成时间戳 */
+  timestamp: number
+  /** 配置数据 */
+  data: {
+    /** Gotify 服务器地址 */
+    gotifyServerUrl: string
+    /** 应用 Token（用于发送消息） */
+    appToken: string
+    /** 客户端 Token（用于接收消息） */
+    clientToken: string
+    /** 服务器名称：selfHost（自建）或 officialServer（官方） */
+    serverName: "selfHost" | "officialServer"
+  }
+}

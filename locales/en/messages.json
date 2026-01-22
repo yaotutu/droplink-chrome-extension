@@ -338,5 +338,21 @@
   "history_sync_failed": {
     "message": "History Sync Failed",
     "description": "History sync error notification title"
+  },
+  "qr_login_title": {
+    "message": "QR Code Login",
+    "description": "QR code login card title"
+  },
+  "qr_login_description": {
+    "message": "Scan this QR code with your mobile device to quickly configure Droplink",
+    "description": "QR code login description"
+  },
+  "qr_login_hint": {
+    "message": "This QR code contains server address and token information. Do not display it in public places.",
+    "description": "QR code security hint"
+  },
+  "qr_login_incomplete_config": {
+    "message": "Configuration incomplete. Please login first to generate QR code.",
+    "description": "Warning when config is incomplete"
   }
 }

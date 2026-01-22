@@ -167,6 +167,7 @@ export function EmailCodeForm({ onLoginSuccess }: EmailCodeFormProps) {
       const newConfig: Config = {
         ...config,
         clientToken: clientToken,
+        appToken: appToken,
         gotifyUrl: gotifyUrl
       }
 
