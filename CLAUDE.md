@@ -808,3 +808,14 @@ Gotify 有两种 Token：
 ## 许可证
 
 根据项目需求添加相应的开源许可证。
+
+---
+
+## 经验教训和规则
+
+以下规则是从实际开发中总结的经验教训，帮助避免重复犯同样的错误：
+
+- 禁止使用固定延迟（setTimeout）来解决异步时序问题，必须找到并修复根本原因
+- Chrome Extension 中，UI 层只负责保存配置，连接管理统一由 Background 层通过 chrome.storage.onChanged 处理
+- 对于可能被多次调用的初始化函数，必须添加状态标志（isInitializing/isInitialized）防止重复执行
+- Chrome Extension 中，chrome.storage.onChanged 是配置同步的唯一来源，不要在保存配置后手动更新本地状态
