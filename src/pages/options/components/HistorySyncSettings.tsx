@@ -2,7 +2,6 @@
  * 历史消息同步设置组件
  */
 
-import { useState } from "react"
 import { useStore } from "~/shared/store"
 import { Switch } from "~/shared/components/Switch"
 import { t } from "~/shared/utils/i18n"
@@ -11,47 +10,8 @@ export function HistorySyncSettings() {
   const config = useStore((state) => state.config)
   const updateField = useStore((state) => state.updateField)
 
-  // 本地状态用于输入验证
-  const [fetchLimit, setFetchLimit] = useState(
-    config.fetchHistoryLimit?.toString() || "100"
-  )
-  const [maxTabs, setMaxTabs] = useState(
-    config.maxOpenTabs?.toString() || "10"
-  )
-  const [interval, setInterval] = useState(
-    config.batchOpenInterval?.toString() || "300"
-  )
-
   const handleToggleHistorySync = async () => {
     await updateField("enableHistorySync", !config.enableHistorySync)
-  }
-
-  const handleToggleBatchNotification = async () => {
-    await updateField("showBatchNotification", !config.showBatchNotification)
-  }
-
-  const handleFetchLimitChange = async (value: string) => {
-    setFetchLimit(value)
-    const num = parseInt(value)
-    if (!isNaN(num) && num >= 1 && num <= 200) {
-      await updateField("fetchHistoryLimit", num)
-    }
-  }
-
-  const handleMaxTabsChange = async (value: string) => {
-    setMaxTabs(value)
-    const num = parseInt(value)
-    if (!isNaN(num) && num >= 1 && num <= 50) {
-      await updateField("maxOpenTabs", num)
-    }
-  }
-
-  const handleIntervalChange = async (value: string) => {
-    setInterval(value)
-    const num = parseInt(value)
-    if (!isNaN(num) && num >= 100 && num <= 5000) {
-      await updateField("batchOpenInterval", num)
-    }
   }
 
   return (
@@ -62,65 +22,13 @@ export function HistorySyncSettings() {
       <div style={styles.toggleRow}>
         <div style={styles.toggleInfo}>
           <div style={styles.toggleLabel}>{t("enable_history_sync")}</div>
+          <div style={styles.toggleDescription}>
+            {t("enable_history_sync_description")}
+          </div>
         </div>
         <Switch
           checked={config.enableHistorySync ?? true}
           onChange={handleToggleHistorySync}
-        />
-      </div>
-
-      {/* 拉取历史消息数量 */}
-      <div style={styles.inputRow}>
-        <label style={styles.inputLabel}>{t("fetch_history_limit")}</label>
-        <input
-          type="number"
-          min="1"
-          max="200"
-          value={fetchLimit}
-          onChange={(e) => handleFetchLimitChange(e.target.value)}
-          style={styles.numberInput}
-          disabled={!config.enableHistorySync}
-        />
-      </div>
-
-      {/* 最大打开标签页数量 */}
-      <div style={styles.inputRow}>
-        <label style={styles.inputLabel}>{t("max_open_tabs")}</label>
-        <input
-          type="number"
-          min="1"
-          max="50"
-          value={maxTabs}
-          onChange={(e) => handleMaxTabsChange(e.target.value)}
-          style={styles.numberInput}
-          disabled={!config.enableHistorySync}
-        />
-      </div>
-
-      {/* 批量打开间隔 */}
-      <div style={styles.inputRow}>
-        <label style={styles.inputLabel}>{t("batch_open_interval")}</label>
-        <input
-          type="number"
-          min="100"
-          max="5000"
-          step="100"
-          value={interval}
-          onChange={(e) => handleIntervalChange(e.target.value)}
-          style={styles.numberInput}
-          disabled={!config.enableHistorySync}
-        />
-      </div>
-
-      {/* 显示完成通知 */}
-      <div style={styles.toggleRow}>
-        <div style={styles.toggleInfo}>
-          <div style={styles.toggleLabel}>{t("show_batch_notification")}</div>
-        </div>
-        <Switch
-          checked={config.showBatchNotification ?? true}
-          onChange={handleToggleBatchNotification}
-          disabled={!config.enableHistorySync}
         />
       </div>
 
@@ -156,33 +64,19 @@ const styles: Record<string, React.CSSProperties> = {
     borderBottom: "1px solid #f0f0f0"
   },
   toggleInfo: {
-    flex: 1
+    flex: 1,
+    marginRight: 16
   },
   toggleLabel: {
     fontSize: 15,
     fontWeight: "500",
-    color: "#333"
-  },
-  inputRow: {
-    display: "flex",
-    justifyContent: "space-between",
-    alignItems: "center",
-    padding: "16px 0",
-    borderBottom: "1px solid #f0f0f0"
-  },
-  inputLabel: {
-    fontSize: 15,
-    fontWeight: "500",
     color: "#333",
-    flex: 1
+    marginBottom: 4
   },
-  numberInput: {
-    width: 100,
-    padding: "8px 12px",
-    fontSize: 14,
-    border: "1px solid #ddd",
-    borderRadius: 6,
-    textAlign: "right"
+  toggleDescription: {
+    fontSize: 13,
+    color: "#666",
+    lineHeight: 1.5
   },
   hintBox: {
     display: "flex",

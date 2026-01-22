@@ -151,9 +151,17 @@ export function EmailCodeForm({ onLoginSuccess }: EmailCodeFormProps) {
 
     setVerifying(true)
     try {
+      console.log("[EmailCodeForm] 开始验证登录...")
+      console.log("[EmailCodeForm] 邮箱:", email)
+      console.log("[EmailCodeForm] 验证码长度:", code.length)
+      console.log("[EmailCodeForm] 认证服务器:", authServerUrl)
+      console.log("[EmailCodeForm] Gotify 服务器:", gotifyServerUrl)
+
       // 调用验证 API（传入 Gotify 服务器地址）
       const { clientToken, appToken, isNewUser, gotifyUrl } =
         await verifyEmailCode(email, code, authServerUrl, gotifyServerUrl)
+
+      console.log("[EmailCodeForm] 验证成功，获得 Token")
 
       // 保存 Token 和服务器地址到配置
       const newConfig: Config = {
@@ -162,22 +170,11 @@ export function EmailCodeForm({ onLoginSuccess }: EmailCodeFormProps) {
         gotifyUrl: gotifyUrl
       }
 
-      // 先保存配置
+      // 保存配置（chrome.storage.onChanged 会自动触发重连）
       console.log("[EmailCodeForm] 保存配置...")
       await saveConfig(newConfig)
 
-      // 主动发送重连消息（会唤醒 Service Worker 并建立连接）
-      console.log("[EmailCodeForm] 发送重连消息...")
-      const reconnectResponse = await chrome.runtime.sendMessage({
-        type: "reconnect"
-      })
-
-      if (!reconnectResponse.success) {
-        console.error("[EmailCodeForm] 重连失败:", reconnectResponse.error)
-        throw new Error(reconnectResponse.error || "连接失败")
-      }
-
-      console.log("[EmailCodeForm] 登录成功，已建立连接")
+      console.log("[EmailCodeForm] 配置已保存，等待自动连接...")
 
       // 显示成功提示
       if (isNewUser) {
@@ -195,7 +192,18 @@ export function EmailCodeForm({ onLoginSuccess }: EmailCodeFormProps) {
       // 调用成功回调
       onLoginSuccess?.()
     } catch (error: any) {
-      alert(`${t("error_login_failed").replace("{error}", error.message || error)}`)
+      console.error("[EmailCodeForm] 登录失败:", error)
+
+      // 根据错误类型提供更详细的提示
+      let errorMessage = error.message || error
+
+      if (errorMessage.includes("验证码错误或已过期")) {
+        errorMessage = "验证码错误或已过期\n\n可能的原因：\n1. 验证码输入错误（请仔细检查）\n2. 验证码已过期（请重新获取）\n3. 多次获取验证码导致旧验证码失效"
+      } else if (errorMessage.includes("无法连接到服务器")) {
+        errorMessage = "无法连接到认证服务器\n\n请检查：\n1. 服务器地址是否正确\n2. 网络连接是否正常\n3. 服务器是否正在运行"
+      }
+
+      alert(`${t("error_login_failed").replace("{error}", errorMessage)}`)
     } finally {
       setVerifying(false)
     }

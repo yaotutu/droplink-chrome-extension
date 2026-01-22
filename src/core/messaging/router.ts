@@ -7,6 +7,7 @@ import type { Config, GotifyMessage } from "~/shared/types"
 import { MessageHandler } from "./handlers/base"
 import { MessageContext } from "./context"
 import { showInfo } from "~/core/notifications"
+import { markAsProcessed } from "~/core/storage/history"
 
 export class MessageRouter {
   private handlers = new Map<string, MessageHandler<any>>()
@@ -72,6 +73,14 @@ export class MessageRouter {
           console.error(`[Router] Handler ${handler.action} 执行失败:`, error)
           // 继续处理其他 handlers，不中断
         }
+      }
+
+      // 标记消息为已处理（只标记 Droplink 消息）
+      if (message.extras?.droplink) {
+        // 异步标记，不阻塞消息处理
+        markAsProcessed([message.id]).catch((error) => {
+          console.error("[Router] 标记消息为已处理失败:", error)
+        })
       }
     } catch (error) {
       console.error("[Router] 路由发生未预期错误:", error)

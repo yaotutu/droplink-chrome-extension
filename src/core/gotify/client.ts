@@ -58,6 +58,7 @@ export class GotifyClient {
         )
 
         console.log(`[GotifyClient] 连接到: ${config.gotifyUrl}`)
+        console.log(`[GotifyClient] WebSocket URL: ${wsUrl.replace(/token=[^&]+/, 'token=***')}`)
         this.setStatus(ConnectionStatus.CONNECTING)
 
         // 创建 WebSocket 连接
@@ -222,7 +223,27 @@ export class GotifyClient {
    * WebSocket 错误
    */
   private handleError(event: Event): void {
-    console.error("[GotifyClient] WebSocket 错误:", event)
+    // 提取错误信息（Event 对象本身没有 message 属性）
+    const errorInfo = {
+      type: event.type,
+      target: event.target ? "WebSocket" : "unknown",
+      timestamp: new Date().toISOString()
+    }
+
+    console.error(
+      `[GotifyClient] WebSocket 错误 (类型: ${errorInfo.type}, 时间: ${errorInfo.timestamp})`
+    )
+    console.error("[GotifyClient] 当前连接状态:", this.currentStatus)
+    console.error("[GotifyClient] WebSocket readyState:", this.ws?.readyState)
+
+    // 添加诊断信息
+    if (this.config) {
+      console.error("[GotifyClient] 诊断信息:")
+      console.error("  - Gotify URL:", this.config.gotifyUrl)
+      console.error("  - Token 已配置:", !!this.config.clientToken)
+      console.error("  - Token 长度:", this.config.clientToken?.length || 0)
+    }
+
     this.setStatus(ConnectionStatus.ERROR)
 
     // 如果在连接过程中出错，reject Promise
@@ -236,9 +257,42 @@ export class GotifyClient {
    * WebSocket 连接关闭
    */
   private handleClose(event: CloseEvent): void {
+    // 解释关闭代码
+    const closeCodeExplanations: Record<number, string> = {
+      1000: "正常关闭",
+      1001: "端点离开（服务器关闭或浏览器导航离开）",
+      1002: "协议错误",
+      1003: "不支持的数据类型",
+      1006: "异常关闭（通常是连接失败、网络问题或服务器拒绝连接）",
+      1007: "数据格式错误",
+      1008: "违反策略",
+      1009: "消息过大",
+      1011: "服务器错误",
+      1015: "TLS 握手失败"
+    }
+
+    const explanation = closeCodeExplanations[event.code] || "未知原因"
+
     console.log(
-      `[GotifyClient] WebSocket 连接关闭 (代码: ${event.code}, 原因: ${event.reason})`
+      `[GotifyClient] WebSocket 连接关闭 (代码: ${event.code}, 原因: ${event.reason || "无"})`
     )
+    console.log(`[GotifyClient] 关闭代码说明: ${explanation}`)
+
+    // 如果是 1006，提供额外的诊断信息
+    if (event.code === 1006) {
+      console.error("[GotifyClient] ⚠️ 连接异常关闭 (1006)，可能的原因：")
+      console.error("  1. Gotify 服务器地址错误或无法访问")
+      console.error("  2. 客户端 Token 无效或已被删除")
+      console.error("  3. Gotify 服务器未配置 CORS")
+      console.error("  4. 网络连接问题")
+      console.error("  5. 防火墙阻止了 WebSocket 连接")
+
+      if (this.config) {
+        console.error("[GotifyClient] 当前配置:")
+        console.error("  - Gotify URL:", this.config.gotifyUrl)
+        console.error("  - Token 已配置:", !!this.config.clientToken)
+      }
+    }
 
     this.ws = null
 

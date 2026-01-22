@@ -74,6 +74,10 @@ export type I18nKey =
   | "enable_filter_rules_desc"
   | "filter_open_tab_messages"
   | "filter_open_tab_messages_desc"
+  | "history_sync_title"
+  | "enable_history_sync"
+  | "enable_history_sync_description"
+  | "history_sync_auto_hint"
 
 /**
  * 获取翻译文本

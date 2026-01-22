@@ -64,7 +64,8 @@ export const useStore = create<AppState>((set, get) => ({
     set({ saving: true })
     try {
       await storageSaveConfig(newConfig)
-      set({ config: newConfig })
+      // 注意：不需要手动 set({ config: newConfig })
+      // chrome.storage.onChanged 会自动触发配置更新
     } catch (error) {
       console.error("[Store] 保存配置失败:", error)
       throw error

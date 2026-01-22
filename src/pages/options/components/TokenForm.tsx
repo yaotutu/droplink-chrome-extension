@@ -67,22 +67,11 @@ export function TokenForm({ onLoginSuccess }: TokenFormProps) {
         gotifyUrl: gotifyServerUrl
       }
 
-      // 先保存配置
+      // 保存配置（chrome.storage.onChanged 会自动触发重连）
       console.log("[TokenForm] 保存配置...")
       await saveConfig(newConfig)
 
-      // 主动发送重连消息（会唤醒 Service Worker 并建立连接）
-      console.log("[TokenForm] 发送重连消息...")
-      const reconnectResponse = await chrome.runtime.sendMessage({
-        type: "reconnect"
-      })
-
-      if (!reconnectResponse.success) {
-        console.error("[TokenForm] 重连失败:", reconnectResponse.error)
-        throw new Error(reconnectResponse.error || t("error_connection_failed"))
-      }
-
-      console.log("[TokenForm] 登录成功，已建立连接")
+      console.log("[TokenForm] 配置已保存，等待自动连接...")
 
       alert(t("success_login"))
       setToken("")

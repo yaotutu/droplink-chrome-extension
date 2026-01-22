@@ -25,10 +25,21 @@ const connectionManager = new ConnectionManager(router, historySyncManager)
 // 初始化消息处理器
 const messageHandler = new RuntimeMessageHandler(connectionManager)
 
+// 防止重复初始化
+let isInitializing = false
+let isInitialized = false
+
 /**
  * 初始化扩展
  */
 async function initialize(): Promise<void> {
+  // 如果正在初始化或已经初始化，跳过
+  if (isInitializing || isInitialized) {
+    console.log("[Background] 跳过重复初始化")
+    return
+  }
+
+  isInitializing = true
   console.log("[Background] 初始化 Droplink 扩展")
 
   // 读取配置
@@ -57,6 +68,8 @@ async function initialize(): Promise<void> {
   // 监听配置变化（作为备份机制，主要依赖主动 reconnect 消息）
   onConfigChange(handleConfigChange)
 
+  isInitializing = false
+  isInitialized = true
   console.log("[Background] 初始化完成")
 }
 

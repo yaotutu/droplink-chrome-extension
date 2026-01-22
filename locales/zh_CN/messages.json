@@ -300,8 +300,12 @@
     "description": "历史同步设置标题"
   },
   "enable_history_sync": {
-    "message": "启用历史消息恢复",
+    "message": "自动打开错过的链接",
     "description": "启用历史同步开关"
+  },
+  "enable_history_sync_description": {
+    "message": "浏览器关闭或断网期间收到的链接，会在重新连接时自动打开",
+    "description": "历史同步功能描述"
   },
   "fetch_history_limit": {
     "message": "拉取历史消息数量",

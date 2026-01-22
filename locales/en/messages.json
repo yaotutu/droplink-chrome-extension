@@ -300,8 +300,12 @@
     "description": "History sync settings title"
   },
   "enable_history_sync": {
-    "message": "Enable history message recovery",
+    "message": "Auto-open missed links",
     "description": "Enable history sync toggle"
+  },
+  "enable_history_sync_description": {
+    "message": "Links received while browser is closed or offline will be automatically opened when reconnected",
+    "description": "History sync feature description"
   },
   "fetch_history_limit": {
     "message": "Fetch history message count",

@@ -73,9 +73,7 @@ export class HistorySyncManager {
       // 5. 批量打开标签页
       await this.processBatch(unprocessedMessages, config)
 
-      // 6. 标记为已处理
-      const processedIds = unprocessedMessages.map((msg) => msg.id)
-      await markAsProcessed(processedIds)
+      // 注意：消息标记由 MessageRouter 统一处理，这里不需要再次标记
 
       console.log("[HistorySync] ======== 历史消息同步完成 ========")
     } catch (error) {
