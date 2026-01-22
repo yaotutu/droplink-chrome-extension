@@ -293,7 +293,130 @@ const greeting = tWithPlaceholders("greeting", { name: "World" })
 
 ## 架构特点
 
-### 1. 依赖注入模式
+### 1. 状态管理架构（chrome.storage + Zustand）
+
+**核心设计原则**：chrome.storage 作为单一数据源（Single Source of Truth），Zustand 作为 UI 层的响应式缓存。
+
+#### 架构图
+
+```
+┌─────────────────────────────────────────────────────────┐
+│                    chrome.storage.sync                   │
+│              (单一数据源 - Single Source of Truth)        │
+│                     持久化存储                            │
+└─────────────────────────────────────────────────────────┘
+                    ↑                    ↓
+                    │                    │
+              写入   │                    │  读取 + 监听变化
+         (saveConfig)│                    │  (onChanged)
+                    │                    │
+┌───────────────────┴────────────────────┴─────────────────┐
+│                   Zustand Store                          │
+│              (UI 层的响应式缓存)                          │
+│         提供 React 组件的状态订阅                         │
+└──────────────────────────────────────────────────────────┘
+                           ↓
+                    自动触发重新渲染
+                           ↓
+┌──────────────────────────────────────────────────────────┐
+│              React 组件 (Options/Popup)                  │
+│                   显示和操作状态                          │
+└──────────────────────────────────────────────────────────┘
+```
+
+#### 数据流向
+
+**修改数据流程**（单向数据流）：
+```
+用户操作
+  → Zustand action (updateField)
+  → chrome.storage.sync.set()  ✅ 写入持久化存储
+  → 触发 chrome.storage.onChanged 事件
+  → Zustand 监听器更新 store 状态
+  → React 组件自动重新渲染
+```
+
+**读取数据流程**：
+```
+组件初始化
+  → loadConfig() 从 chrome.storage 读取
+  → 更新 Zustand store
+  → 组件通过 useStore() 订阅状态
+```
+
+#### 关键实现
+
+**1. Zustand Store 配置同步**（`src/shared/store/index.ts`）：
+```typescript
+// 初始化配置同步监听器
+initConfigSync: () => {
+  chrome.storage.onChanged.addListener((changes, areaName) => {
+    if (areaName === "sync" && changes.droplink_config) {
+      const newConfig = changes.droplink_config.newValue
+      if (newConfig) {
+        set({ config: newConfig })  // 同步到 Zustand
+      }
+    }
+  })
+}
+
+// 保存配置（只写入 chrome.storage，不直接更新 Zustand）
+saveConfig: async (newConfig: Config) => {
+  await chrome.storage.sync.set({ droplink_config: newConfig })
+  // ⚠️ 不在这里更新 Zustand！等待 onChanged 事件触发
+}
+```
+
+**2. UI 层初始化**（`src/options.tsx`）：
+```typescript
+useEffect(() => {
+  loadConfig()      // 加载初始配置
+  initConfigSync()  // 启动配置同步监听器
+}, [loadConfig, initConfigSync])
+```
+
+#### 架构优势
+
+1. **数据持久化**：配置保存在 chrome.storage，刷新页面不丢失
+2. **跨页面同步**：popup、options、background 自动同步最新配置
+3. **单一数据源**：chrome.storage 是唯一的真实数据源，避免状态不一致
+4. **响应式 UI**：Zustand 让 React 组件能够自动响应配置变化
+5. **性能最优**：
+   - 写入：异步但不阻塞 UI（~10ms）
+   - 读取：从 Zustand 内存缓存读取（~0.1ms）
+   - 同步：使用浏览器原生 onChanged 事件
+
+#### 设计模式
+
+这个架构遵循以下设计模式：
+
+- **单一数据源（Single Source of Truth）**：chrome.storage 是唯一的真实数据源
+- **CQRS（命令查询职责分离）**：
+  - 写入路径（Command）：UI → chrome.storage
+  - 读取路径（Query）：Zustand 内存缓存
+  - 同步机制：onChanged 事件
+- **Write-Through Cache**：写入时先更新持久化存储，再通过事件更新缓存
+
+#### 注意事项
+
+⚠️ **永远不要直接修改 Zustand 状态**，必须通过 chrome.storage 作为中介：
+
+```typescript
+// ❌ 错误做法：直接修改 Zustand
+set({ config: { ...config, openTabNotification: true } })
+
+// ✅ 正确做法：通过 chrome.storage
+await saveConfig({ ...config, openTabNotification: true })
+// chrome.storage → onChanged → Zustand 自动更新
+```
+
+⚠️ **必须在 UI 初始化时调用 initConfigSync()**，否则配置变化不会同步到 UI。
+
+⚠️ **防止重复注册监听器**：使用 `isConfigSyncInitialized` 标志位防止重复注册。
+
+---
+
+### 2. 依赖注入模式
 - 使用 `MessageContext` 作为依赖注入容器
 - Handlers 通过 context 参数接收配置，不直接调用 storage
 - 解耦了消息处理器与配置存储的依赖关系
@@ -819,3 +942,5 @@ Gotify 有两种 Token：
 - Chrome Extension 中，UI 层只负责保存配置，连接管理统一由 Background 层通过 chrome.storage.onChanged 处理
 - 对于可能被多次调用的初始化函数，必须添加状态标志（isInitializing/isInitialized）防止重复执行
 - Chrome Extension 中，chrome.storage.onChanged 是配置同步的唯一来源，不要在保存配置后手动更新本地状态
+- 在 UI 层使用 Zustand 等状态管理库时，必须监听 chrome.storage.onChanged 事件来同步更新 store 状态，否则 UI 不会响应配置变化
+- 调试复杂的异步流程时，优先添加详细的日志追踪数据流向，而不是盲目修改代码

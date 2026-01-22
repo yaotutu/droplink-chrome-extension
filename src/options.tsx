@@ -18,14 +18,16 @@ function OptionsPage() {
   const loading = useStore((state) => state.loading)
   const loadConfig = useStore((state) => state.loadConfig)
   const resetConfig = useStore((state) => state.resetConfig)
+  const initConfigSync = useStore((state) => state.initConfigSync)
 
   // 本地 UI 状态：是否已登录
   const [isLoggedIn, setIsLoggedIn] = useState(false)
 
-  // 初始化：加载配置
+  // 初始化：加载配置并启动配置同步
   useEffect(() => {
     loadConfig()
-  }, [loadConfig])
+    initConfigSync()
+  }, [loadConfig, initConfigSync])
 
   // 监听配置变化，更新登录状态
   useEffect(() => {

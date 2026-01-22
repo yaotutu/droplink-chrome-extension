@@ -10,11 +10,15 @@ export function FeatureToggles() {
   const config = useStore((state) => state.config)
   const updateField = useStore((state) => state.updateField)
 
+  console.log("[FeatureToggles] 当前配置:", config)
+
   const handleToggleOpenTabNotification = async () => {
+    console.log("[FeatureToggles] 切换 openTabNotification:", !config.openTabNotification)
     await updateField("openTabNotification", !config.openTabNotification)
   }
 
   const handleToggleShowAllNotifications = async () => {
+    console.log("[FeatureToggles] 切换 showAllNotifications:", !config.showAllNotifications)
     await updateField("showAllNotifications", !config.showAllNotifications)
   }
 
