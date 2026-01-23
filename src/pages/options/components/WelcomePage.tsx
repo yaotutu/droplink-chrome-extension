@@ -17,6 +17,7 @@ import { QRCodeDisplay } from "~/shared/components/QRCodeDisplay"
 import { useStore } from "~/shared/store"
 import type { QRLoginData } from "~/shared/types"
 import { GOTIFY_SERVER_URL } from "~/shared/utils/constants"
+import { t } from "~/shared/utils/i18n"
 
 export const WelcomePage: React.FC = () => {
   // TODO: 替换为实际的移动应用下载链接
@@ -66,10 +67,9 @@ export const WelcomePage: React.FC = () => {
     <div style={styles.container}>
       {/* 主标题 */}
       <div style={styles.header}>
-        <h1 style={styles.title}>Welcome to Gotify Chrome</h1>
+        <h1 style={styles.title}>{t("welcome_page_title")}</h1>
         <p style={styles.subtitle}>
-          Set up your device and sync your account to start receiving
-          notifications.
+          {t("welcome_page_subtitle")}
         </p>
       </div>
 
@@ -80,12 +80,10 @@ export const WelcomePage: React.FC = () => {
           <div style={styles.column}>
             <div style={styles.columnHeader}>
               <span style={styles.columnIcon}>📱</span>
-              <h2 style={styles.columnTitle}>Get the Mobile App</h2>
+              <h2 style={styles.columnTitle}>{t("get_mobile_app_title")}</h2>
             </div>
             <p style={styles.columnDescription}>
-              Take Gotify on the go. Download the official Android client to
-              receive real-time push notifications directly on your mobile
-              device.
+              {t("get_mobile_app_desc")}
             </p>
 
             {/* 二维码 - 简单边框样式 */}
@@ -93,13 +91,13 @@ export const WelcomePage: React.FC = () => {
             <div style={styles.qrBoxLeft}>
               <QRCodeDisplay value={downloadQRValue} size={175} level="M" />
             </div>
-              <div style={styles.qrLabel}>Scan to download APK</div>
+              <div style={styles.qrLabel}>{t("scan_to_download")}</div>
             </div>
 
             {/* 下载按钮 */}
             <button style={styles.downloadButton} onClick={handleDownload}>
               <span style={styles.buttonIcon}>⬇️</span>
-              Download Android APK
+              {t("download_android_apk")}
             </button>
           </div>
 
@@ -107,11 +105,10 @@ export const WelcomePage: React.FC = () => {
           <div style={styles.column}>
             <div style={styles.columnHeader}>
               <span style={styles.columnIcon}>🔗</span>
-              <h2 style={styles.columnTitle}>Connect Extension</h2>
+              <h2 style={styles.columnTitle}>{t("connect_extension_title")}</h2>
             </div>
             <p style={styles.columnDescription}>
-              Open Gotify on your phone and scan the code below to instantly
-              sync your server settings, tokens, and active subscriptions.
+              {t("connect_extension_desc")}
             </p>
 
             {/* 二维码 - 3D卡片样式 */}
@@ -134,10 +131,10 @@ export const WelcomePage: React.FC = () => {
                 onClick={handleRefreshQR}
                 disabled={!isConfigComplete}>
                 <span style={styles.refreshIcon}>🔄</span>
-                Refresh QR Code
+                {t("refresh_qr_code")}
               </button>
               <div style={styles.securityHint}>
-                Codes expire every 5 minutes for security
+                {t("qr_code_expiry_hint")}
               </div>
             </div>
           </div>

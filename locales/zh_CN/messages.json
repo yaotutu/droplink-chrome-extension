@@ -422,5 +422,81 @@
   "advanced_settings": {
     "message": "高级设置",
     "description": "高级设置区域标题"
+  },
+  "welcome_tab": {
+    "message": "欢迎",
+    "description": "欢迎标签页标签"
+  },
+  "settings_tab": {
+    "message": "设置",
+    "description": "设置标签页标签"
+  },
+  "welcome_page_title": {
+    "message": "欢迎使用 Gotify Chrome",
+    "description": "欢迎页面主标题"
+  },
+  "welcome_page_subtitle": {
+    "message": "设置您的设备并同步账户以开始接收通知。",
+    "description": "欢迎页面副标题"
+  },
+  "connect_extension_title": {
+    "message": "连接扩展",
+    "description": "连接扩展区域标题"
+  },
+  "connect_extension_desc": {
+    "message": "在手机上打开 Gotify 并扫描下方二维码，即可同步服务器设置、Token 和订阅信息。",
+    "description": "连接扩展区域描述"
+  },
+  "refresh_qr_code": {
+    "message": "刷新二维码",
+    "description": "刷新二维码按钮"
+  },
+  "qr_code_expiry_hint": {
+    "message": "二维码每 5 分钟过期以确保安全",
+    "description": "二维码过期安全提示"
+  },
+  "settings_page_title": {
+    "message": "设置",
+    "description": "设置页面标题"
+  },
+  "not_connected": {
+    "message": "未连接",
+    "description": "未连接状态"
+  },
+  "sign_out_confirm": {
+    "message": "确定要退出登录吗？这将清空所有配置。",
+    "description": "退出登录确认消息"
+  },
+  "back_button": {
+    "message": "返回",
+    "description": "返回按钮标签"
+  },
+  "help_link": {
+    "message": "帮助",
+    "description": "帮助链接标签"
+  },
+  "documentation_link": {
+    "message": "文档",
+    "description": "文档链接标签"
+  },
+  "support_link": {
+    "message": "支持",
+    "description": "支持链接标签"
+  },
+  "settings_button": {
+    "message": "设置",
+    "description": "设置按钮标签"
+  },
+  "help_center_link": {
+    "message": "帮助中心",
+    "description": "帮助中心链接标签"
+  },
+  "security_faq_link": {
+    "message": "安全常见问题",
+    "description": "安全常见问题链接标签"
+  },
+  "footer_copyright": {
+    "message": "© 2024 Droplink. 保留所有权利。为安全和隐私而构建。",
+    "description": "页脚版权文本"
   }
 }

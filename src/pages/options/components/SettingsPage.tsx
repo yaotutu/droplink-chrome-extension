@@ -11,6 +11,7 @@ import { NotificationPreferences } from "~/pages/options/components/Notification
 import { StatusBadge } from "~/pages/options/components/ui/StatusBadge"
 import { useStore } from "~/shared/store"
 import { ConnectionStatus } from "~/shared/types"
+import { t } from "~/shared/utils/i18n"
 
 export const SettingsPage: React.FC = () => {
   const status = useStore((state) => state.status)
@@ -26,12 +27,12 @@ export const SettingsPage: React.FC = () => {
       {/* 页面标题区域 */}
       <div style={styles.header}>
         <div style={styles.headerLeft}>
-          <h1 style={styles.title}>Settings</h1>
+          <h1 style={styles.title}>{t("settings_page_title")}</h1>
           <div style={styles.subtitle}>
             <span style={styles.version}>v{version}</span>
             <span style={styles.separator}>•</span>
             <span style={styles.connectionStatus}>
-              {isConnected ? "Connected to server" : "Not connected"}
+              {isConnected ? t("settings_connected_to_server") : t("not_connected")}
             </span>
           </div>
         </div>

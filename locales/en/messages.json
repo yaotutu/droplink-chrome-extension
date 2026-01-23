@@ -422,5 +422,81 @@
   "advanced_settings": {
     "message": "Advanced Settings",
     "description": "Advanced settings section title"
+  },
+  "welcome_tab": {
+    "message": "Welcome",
+    "description": "Welcome tab label"
+  },
+  "settings_tab": {
+    "message": "Settings",
+    "description": "Settings tab label"
+  },
+  "welcome_page_title": {
+    "message": "Welcome to Gotify Chrome",
+    "description": "Welcome page main title"
+  },
+  "welcome_page_subtitle": {
+    "message": "Set up your device and sync your account to start receiving notifications.",
+    "description": "Welcome page subtitle"
+  },
+  "connect_extension_title": {
+    "message": "Connect Extension",
+    "description": "Connect extension section title"
+  },
+  "connect_extension_desc": {
+    "message": "Open Gotify on your phone and scan the code below to instantly sync your server settings, tokens, and active subscriptions.",
+    "description": "Connect extension section description"
+  },
+  "refresh_qr_code": {
+    "message": "Refresh QR Code",
+    "description": "Refresh QR code button"
+  },
+  "qr_code_expiry_hint": {
+    "message": "Codes expire every 5 minutes for security",
+    "description": "QR code expiry security hint"
+  },
+  "settings_page_title": {
+    "message": "Settings",
+    "description": "Settings page title"
+  },
+  "not_connected": {
+    "message": "Not connected",
+    "description": "Not connected status"
+  },
+  "sign_out_confirm": {
+    "message": "Are you sure you want to sign out? This will clear all configuration.",
+    "description": "Sign out confirmation message"
+  },
+  "back_button": {
+    "message": "Back",
+    "description": "Back button label"
+  },
+  "help_link": {
+    "message": "Help",
+    "description": "Help link label"
+  },
+  "documentation_link": {
+    "message": "Documentation",
+    "description": "Documentation link label"
+  },
+  "support_link": {
+    "message": "Support",
+    "description": "Support link label"
+  },
+  "settings_button": {
+    "message": "Settings",
+    "description": "Settings button label"
+  },
+  "help_center_link": {
+    "message": "Help Center",
+    "description": "Help center link label"
+  },
+  "security_faq_link": {
+    "message": "Security FAQ",
+    "description": "Security FAQ link label"
+  },
+  "footer_copyright": {
+    "message": "© 2024 Droplink. All rights reserved. Built for security and privacy.",
+    "description": "Footer copyright text"
   }
 }

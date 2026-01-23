@@ -94,8 +94,8 @@ function OptionsPage() {
       tabs={
         isLoggedIn
           ? [
-              { id: "welcome", label: "Welcome" },
-              { id: "settings", label: "Settings" }
+              { id: "welcome", label: t("welcome_tab") },
+              { id: "settings", label: t("settings_tab") }
             ]
           : undefined
       }

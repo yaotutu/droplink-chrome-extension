@@ -49,7 +49,7 @@ export const Layout: React.FC<LayoutProps> = ({
             {showBackButton && (
               <button onClick={onBackClick} style={styles.backButton}>
                 <span style={styles.backIcon}>←</span>
-                Back
+                {t("back_button")}
               </button>
             )}
           </div>
@@ -80,21 +80,21 @@ export const Layout: React.FC<LayoutProps> = ({
               target="_blank"
               rel="noopener noreferrer"
               style={styles.navLink}>
-              Help
+              {t("help_link")}
             </a>
             <a
               href="https://github.com/yaotutu/droplink#readme"
               target="_blank"
               rel="noopener noreferrer"
               style={styles.navLink}>
-              Documentation
+              {t("documentation_link")}
             </a>
             <a
               href="https://github.com/yaotutu/droplink/issues"
               target="_blank"
               rel="noopener noreferrer"
               style={styles.navLink}>
-              Support
+              {t("support_link")}
             </a>
 
             {/* Settings 按钮（仅在已登录时显示） */}
@@ -103,7 +103,7 @@ export const Layout: React.FC<LayoutProps> = ({
                 onClick={onSettingsClick}
                 style={styles.settingsButton}>
                 <span style={styles.settingsIcon}>⚙️</span>
-                Settings
+                {t("settings_button")}
               </button>
             )}
           </nav>
@@ -120,15 +120,15 @@ export const Layout: React.FC<LayoutProps> = ({
         <div style={styles.footerLinks}>
           <a href="#" style={styles.footerLink}>
             <span style={styles.footerIcon}>❓</span>
-            Help Center
+            {t("help_center_link")}
           </a>
           <a href="#" style={styles.footerLink}>
             <span style={styles.footerIcon}>🔒</span>
-            Security FAQ
+            {t("security_faq_link")}
           </a>
         </div>
         <div style={styles.footerText}>
-          © 2024 Droplink. All rights reserved. Built for security and privacy.
+          {t("footer_copyright")}
         </div>
       </footer>
     </div>

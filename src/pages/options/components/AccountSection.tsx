@@ -11,6 +11,7 @@ import { Card } from "~/pages/options/components/ui/Card"
 import { SectionTitle } from "~/pages/options/components/ui/SectionTitle"
 import { useStore } from "~/shared/store"
 import { DEFAULT_CONFIG } from "~/shared/utils/constants"
+import { t } from "~/shared/utils/i18n"
 
 export const AccountSection: React.FC = () => {
   const config = useStore((state) => state.config)
@@ -27,7 +28,7 @@ export const AccountSection: React.FC = () => {
   }
 
   const handleSignOut = async () => {
-    if (confirm("确定要退出登录吗？这将清空所有配置。")) {
+    if (confirm(t("sign_out_confirm"))) {
       await saveConfig(DEFAULT_CONFIG)
       // 刷新页面以显示登录表单
       window.location.reload()
@@ -36,7 +37,7 @@ export const AccountSection: React.FC = () => {
 
   return (
     <>
-      <SectionTitle>ACCOUNT</SectionTitle>
+      <SectionTitle>{t("account_section_title").toUpperCase()}</SectionTitle>
       <Card>
         {/* 服务器地址 */}
         <div style={styles.accountInfo}>
@@ -44,13 +45,13 @@ export const AccountSection: React.FC = () => {
             <span style={styles.icon}>👤</span>
           </div>
           <div style={styles.infoContent}>
-            <div style={styles.serverLabel}>Server Address</div>
+            <div style={styles.serverLabel}>{t("server_address")}</div>
             <div style={styles.serverAddress}>
               {getServerAddress(config.gotifyUrl)}
             </div>
           </div>
           <Button variant="secondary" onClick={handleSignOut}>
-            Sign Out
+            {t("sign_out")}
           </Button>
         </div>
       </Card>

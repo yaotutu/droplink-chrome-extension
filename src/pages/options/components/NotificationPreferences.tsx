@@ -30,14 +30,14 @@ export const NotificationPreferences: React.FC = () => {
 
   return (
     <>
-      <SectionTitle>NOTIFICATION PREFERENCES</SectionTitle>
+      <SectionTitle>{t("notification_preferences_title").toUpperCase()}</SectionTitle>
       <Card>
         {/* Show all notifications */}
         <div style={styles.item}>
           <div style={styles.itemContent}>
-            <div style={styles.itemTitle}>Show all notifications</div>
+            <div style={styles.itemTitle}>{t("show_all_notifications")}</div>
             <div style={styles.itemDesc}>
-              Receive and display all Gotify messages
+              {t("show_all_notifications_desc")}
             </div>
           </div>
           <Switch
@@ -49,9 +49,9 @@ export const NotificationPreferences: React.FC = () => {
         {/* Show notification on tab open */}
         <div style={styles.item}>
           <div style={styles.itemContent}>
-            <div style={styles.itemTitle}>Show notification on tab open</div>
+            <div style={styles.itemTitle}>{t("show_notification_on_tab_open")}</div>
             <div style={styles.itemDesc}>
-              Confirm when a tab opens successfully from a link
+              {t("show_notification_on_tab_open_desc")}
             </div>
           </div>
           <Switch
@@ -63,9 +63,9 @@ export const NotificationPreferences: React.FC = () => {
         {/* Auto-open missed links */}
         <div style={{ ...styles.item, marginBottom: 0 }}>
           <div style={styles.itemContent}>
-            <div style={styles.itemTitle}>Auto-open missed links</div>
+            <div style={styles.itemTitle}>{t("auto_open_missed_links")}</div>
             <div style={styles.itemDesc}>
-              Automatically open links received while browser was offline
+              {t("auto_open_missed_links_desc")}
             </div>
           </div>
           <Switch
