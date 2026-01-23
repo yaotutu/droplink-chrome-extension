@@ -88,8 +88,9 @@ export function TokenForm({ onLoginSuccess }: TokenFormProps) {
       setAppToken("")
       // 调用成功回调，触发父组件重新加载配置
       onLoginSuccess?.()
-    } catch (error: any) {
-      alert(`${t("error_login_failed").replace("{error}", error.message || error)}`)
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : String(error)
+      alert(`${t("error_login_failed").replace("{error}", errorMessage)}`)
     } finally {
       setSaving(false)
     }

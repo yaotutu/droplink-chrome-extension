@@ -5,6 +5,7 @@
 import type { StatusInfo } from "~/shared/types"
 import { ConnectionStatus } from "~/shared/types"
 import { t } from "~/shared/utils/i18n"
+import * as theme from "~/pages/options/styles/theme"
 
 interface StatusCardProps {
   status: StatusInfo
@@ -36,15 +37,15 @@ export function StatusCard({ status, serverUrl }: StatusCardProps) {
   const getStatusColor = () => {
     switch (status.status) {
       case ConnectionStatus.CONNECTED:
-        return "#4caf50"
+        return theme.colors.success
       case ConnectionStatus.CONNECTING:
-        return "#ff9800"
+        return theme.colors.warning
       case ConnectionStatus.DISCONNECTED:
-        return "#9e9e9e"
+        return theme.colors.text.muted
       case ConnectionStatus.ERROR:
-        return "#f44336"
+        return theme.colors.danger
       default:
-        return "#9e9e9e"
+        return theme.colors.text.muted
     }
   }
 
@@ -95,11 +96,11 @@ export function StatusCard({ status, serverUrl }: StatusCardProps) {
 
 const styles: Record<string, React.CSSProperties> = {
   card: {
-    backgroundColor: "#fff",
-    borderRadius: 8,
-    padding: 16,
+    backgroundColor: theme.colors.card,
+    borderRadius: theme.borderRadius.md,
+    padding: theme.spacing.md,
     marginBottom: 12,
-    boxShadow: "0 1px 3px rgba(0,0,0,0.1)"
+    boxShadow: theme.shadows.card
   },
   header: {
     display: "flex",
@@ -107,12 +108,12 @@ const styles: Record<string, React.CSSProperties> = {
     alignItems: "center",
     marginBottom: 12,
     paddingBottom: 12,
-    borderBottom: "1px solid #eee"
+    borderBottom: `1px solid ${theme.colors.border}`
   },
   label: {
-    fontSize: 14,
-    fontWeight: "500",
-    color: "#555"
+    fontSize: theme.fontSize.sm,
+    fontWeight: theme.fontWeight.medium,
+    color: theme.colors.text.secondary
   },
   indicatorContainer: {
     display: "flex",
@@ -126,21 +127,21 @@ const styles: Record<string, React.CSSProperties> = {
   },
   text: {
     fontSize: 13,
-    color: "#555"
+    color: theme.colors.text.secondary
   },
   infoRow: {
     display: "flex",
     justifyContent: "space-between",
     alignItems: "center",
     marginTop: 8,
-    fontSize: 12
+    fontSize: theme.fontSize.xs
   },
   infoLabel: {
-    color: "#777",
-    fontWeight: "500"
+    color: theme.colors.text.secondary,
+    fontWeight: theme.fontWeight.medium
   },
   infoValue: {
-    color: "#555"
+    color: theme.colors.text.secondary
   },
   errorBox: {
     display: "flex",
@@ -149,14 +150,14 @@ const styles: Record<string, React.CSSProperties> = {
     marginTop: 12,
     padding: 8,
     backgroundColor: "#ffebee",
-    borderRadius: 4,
-    fontSize: 12
+    borderRadius: theme.borderRadius.sm,
+    fontSize: theme.fontSize.xs
   },
   errorIcon: {
-    fontSize: 14
+    fontSize: theme.fontSize.sm
   },
   errorText: {
-    color: "#c62828",
+    color: theme.colors.danger,
     flex: 1
   }
 }

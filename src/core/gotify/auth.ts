@@ -20,7 +20,7 @@ async function fetchWithTimeout(
 ): Promise<Response> {
   try {
     return await fetchWithTimeoutUtil(url, options, timeout)
-  } catch (error: any) {
+  } catch (error: unknown) {
     // CORS 错误检测
     if (error instanceof TypeError && error.message === "Failed to fetch") {
       throw new Error(
@@ -74,7 +74,7 @@ export async function sendVerificationCode(
     }
 
     console.log("[Auth] 验证码发送成功")
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("[Auth] 发送验证码异常:", error)
     throw error
   }
@@ -149,7 +149,7 @@ export async function verifyEmailCode(
       isNewUser: data.isNewUser,
       gotifyUrl: finalGotifyUrl
     }
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("[Auth] 登录异常:", error)
     throw error
   }

@@ -78,6 +78,12 @@ export type I18nKey =
   | "enable_history_sync"
   | "enable_history_sync_description"
   | "history_sync_auto_hint"
+  | "error_server_url_required"
+  | "error_invalid_url"
+  | "gotify_server_label"
+  | "gotify_server_placeholder"
+  | "auth_server_label"
+  | "auth_server_placeholder"
 
 /**
  * 获取翻译文本

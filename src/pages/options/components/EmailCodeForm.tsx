@@ -99,8 +99,9 @@ export function EmailCodeForm({ onLoginSuccess }: EmailCodeFormProps) {
 
       // 移除 alert，用户可以通过倒计时看到验证码已发送
       console.log("[EmailCodeForm] 验证码发送成功")
-    } catch (error: any) {
-      alert(`${t("error_send_code_failed").replace("{error}", error.message || error)}`)
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : String(error)
+      alert(`${t("error_send_code_failed").replace("{error}", errorMessage)}`)
     } finally {
       setLoading(false)
     }
@@ -191,11 +192,11 @@ export function EmailCodeForm({ onLoginSuccess }: EmailCodeFormProps) {
 
       // 调用成功回调
       onLoginSuccess?.()
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("[EmailCodeForm] 登录失败:", error)
 
       // 根据错误类型提供更详细的提示
-      let errorMessage = error.message || error
+      let errorMessage = error instanceof Error ? error.message : String(error)
 
       if (errorMessage.includes("验证码错误或已过期")) {
         errorMessage = "验证码错误或已过期\n\n可能的原因：\n1. 验证码输入错误（请仔细检查）\n2. 验证码已过期（请重新获取）\n3. 多次获取验证码导致旧验证码失效"
