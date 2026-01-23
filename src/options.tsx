@@ -1,170 +1,129 @@
 /**
  * Options 页面入口（使用 Zustand Store）
+ * 重构后的页面流程：
+ * 1. 未登录 → WelcomePage（扫码下载 + 扫码登录）
+ * 2. 已登录 → WelcomePage（右上角显示 Settings 按钮）
+ * 3. 点击 Settings → SettingsPage（设置页面）
  */
 
 import { useEffect, useState } from "react"
-import { useStore } from "~/shared/store"
-import { isConfigValid } from "~/core/storage"
+
+import { Layout } from "~/pages/options/components/Layout"
 import { LoginForm } from "~/pages/options/components/LoginForm"
-import { ConfigCard } from "~/pages/options/components/ConfigCard"
-import { QRLoginCard } from "~/pages/options/components/QRLoginCard"
-import { FeatureToggles } from "~/pages/options/components/FeatureToggles"
-import { HistorySyncSettings } from "~/pages/options/components/HistorySyncSettings"
-import { APP_NAME, APP_VERSION } from "~/shared/utils/constants"
-import { t, tWithPlaceholders } from "~/shared/utils/i18n"
+import { WelcomePage } from "~/pages/options/components/WelcomePage"
+import { SettingsPage } from "~/pages/options/components/SettingsPage"
+import { isConfigValid } from "~/core/storage"
+import { useStore } from "~/shared/store"
+import { t } from "~/shared/utils/i18n"
 
 function OptionsPage() {
   // 从 store 读取状态
   const config = useStore((state) => state.config)
   const loading = useStore((state) => state.loading)
   const loadConfig = useStore((state) => state.loadConfig)
-  const resetConfig = useStore((state) => state.resetConfig)
+  const loadStatus = useStore((state) => state.loadStatus)
   const initConfigSync = useStore((state) => state.initConfigSync)
 
-  // 本地 UI 状态：是否已登录
+  // 本地 UI 状态
   const [isLoggedIn, setIsLoggedIn] = useState(false)
+  const [activeTab, setActiveTab] = useState<"welcome" | "settings">("welcome")
 
   // 初始化：加载配置并启动配置同步
   useEffect(() => {
     loadConfig()
+    loadStatus()
     initConfigSync()
-  }, [loadConfig, initConfigSync])
+  }, [loadConfig, loadStatus, initConfigSync])
+
+  // 全局样式修正，避免页面内容过少时出现浏览器滚动条
+  useEffect(() => {
+    document.documentElement.style.height = "100%"
+    document.body.style.height = "100%"
+    document.body.style.margin = "0"
+    document.body.style.overflow = "hidden"
+  }, [])
 
   // 监听配置变化，更新登录状态
   useEffect(() => {
     setIsLoggedIn(isConfigValid(config))
   }, [config])
 
-  /**
-   * 退出登录
-   */
-  const handleLogout = async () => {
-    if (confirm(t("logout_confirm"))) {
-      await resetConfig()
-      setIsLoggedIn(false)
+  // 定期更新连接状态
+  useEffect(() => {
+    if (isLoggedIn) {
+      const interval = setInterval(() => {
+        loadStatus()
+      }, 5000) // 每5秒更新一次状态
+
+      return () => clearInterval(interval)
     }
-  }
+  }, [isLoggedIn, loadStatus])
 
   /**
    * 登录成功回调
    */
   const handleLoginSuccess = () => {
     loadConfig() // 重新加载配置
+    loadStatus() // 加载连接状态
   }
+
+  /**
+   * 切换到设置页面
+   */
+  const handleShowSettings = () => {
+    setActiveTab("settings")
+  }
+
+  const handleShowWelcome = () => {
+    setActiveTab("welcome")
+  }
+
 
   if (loading) {
     return (
-      <div style={styles.container}>
-        <div style={styles.loading}>{t("loading")}</div>
-      </div>
+      <Layout>
+        <div style={styles.loading}>{t("loading", "加载中...")}</div>
+      </Layout>
     )
   }
 
   return (
-    <div style={styles.container}>
-      {/* 页面标题 */}
-      <div style={styles.header}>
-        <div>
-          <h1 style={styles.title}>{tWithPlaceholders("settings_title", { APP_NAME })}</h1>
-          <p style={styles.version}>{tWithPlaceholders("version", { APP_VERSION })}</p>
-        </div>
-      </div>
-
-      {/* 主要内容 */}
-      <div style={styles.content}>
-        {!isLoggedIn ? (
-          /* 未登录：显示登录表单 */
-          <LoginForm onLoginSuccess={handleLoginSuccess} />
+    <Layout
+      showSettingsButton={false}
+      onSettingsClick={handleShowSettings}
+      tabs={
+        isLoggedIn
+          ? [
+              { id: "welcome", label: "Welcome" },
+              { id: "settings", label: "Settings" }
+            ]
+          : undefined
+      }
+      activeTabId={activeTab}
+      onTabChange={(id) => setActiveTab(id as "welcome" | "settings")}>
+      {!isLoggedIn ? (
+        /* 未登录：显示登录表单 */
+        <LoginForm onLoginSuccess={handleLoginSuccess} />
+      ) : (
+        activeTab === "settings" ? (
+          /* 已登录 + 设置页 */
+        <SettingsPage />
         ) : (
-          /* 已登录：显示配置和功能设置 */
-          <>
-            <ConfigCard config={config} onLogout={handleLogout} />
-            <QRLoginCard />
-            <FeatureToggles />
-            <HistorySyncSettings />
-          </>
-        )}
-      </div>
-
-      {/* 页脚信息 */}
-      <div style={styles.footer}>
-        <p style={styles.footerText}>{tWithPlaceholders("app_description", { APP_NAME })}</p>
-        <p style={styles.footerLinks}>
-          <a
-            href="https://github.com/gotify"
-            target="_blank"
-            rel="noopener noreferrer"
-            style={styles.link}>
-            {t("gotify_website")}
-          </a>
-          {" · "}
-          <a
-            href="https://github.com"
-            target="_blank"
-            rel="noopener noreferrer"
-            style={styles.link}>
-            {t("github")}
-          </a>
-        </p>
-      </div>
-    </div>
+          /* 已登录 + 欢迎页 */
+          <WelcomePage />
+        )
+      )}
+    </Layout>
   )
 }
 
 // 样式
 const styles: Record<string, React.CSSProperties> = {
-  container: {
-    minHeight: "100vh",
-    backgroundColor: "#f5f5f5",
-    padding: "40px 20px"
-  },
-  header: {
-    maxWidth: 800,
-    margin: "0 auto 32px",
-    textAlign: "center"
-  },
-  title: {
-    fontSize: 32,
-    fontWeight: "700",
-    margin: 0,
-    marginBottom: 8,
-    color: "#333"
-  },
-  version: {
-    fontSize: 14,
-    color: "#999",
-    margin: 0
-  },
-  content: {
-    maxWidth: 800,
-    margin: "0 auto"
-  },
   loading: {
     textAlign: "center",
-    padding: 60,
-    fontSize: 16,
+    padding: "60px 20px",
+    fontSize: "16px",
     color: "#999"
-  },
-  footer: {
-    maxWidth: 800,
-    margin: "40px auto 0",
-    paddingTop: 32,
-    borderTop: "1px solid #e0e0e0",
-    textAlign: "center"
-  },
-  footerText: {
-    fontSize: 13,
-    color: "#999",
-    margin: "0 0 8px 0"
-  },
-  footerLinks: {
-    fontSize: 13,
-    color: "#999",
-    margin: 0
-  },
-  link: {
-    color: "#2196f3",
-    textDecoration: "none"
   }
 }
 

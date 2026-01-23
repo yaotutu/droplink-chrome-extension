@@ -354,5 +354,73 @@
   "qr_login_incomplete_config": {
     "message": "Configuration incomplete. Please login first to generate QR code.",
     "description": "Warning when config is incomplete"
+  },
+  "settings_active": {
+    "message": "Active",
+    "description": "Active status badge"
+  },
+  "settings_inactive": {
+    "message": "Inactive",
+    "description": "Inactive status badge"
+  },
+  "settings_connected_to_server": {
+    "message": "Connected to server",
+    "description": "Connected to server status"
+  },
+  "notification_preferences_title": {
+    "message": "NOTIFICATION PREFERENCES",
+    "description": "Notification preferences section title"
+  },
+  "show_notification_on_tab_open": {
+    "message": "Show notification on tab open",
+    "description": "Show notification on tab open toggle"
+  },
+  "show_notification_on_tab_open_desc": {
+    "message": "Confirm when a tab opens successfully from a link",
+    "description": "Show notification on tab open description"
+  },
+  "auto_open_missed_links": {
+    "message": "Auto-open missed links",
+    "description": "Auto-open missed links toggle"
+  },
+  "auto_open_missed_links_desc": {
+    "message": "Automatically open links received while browser was offline",
+    "description": "Auto-open missed links description"
+  },
+  "account_section_title": {
+    "message": "ACCOUNT",
+    "description": "Account section title"
+  },
+  "server_address": {
+    "message": "Server Address",
+    "description": "Server address label"
+  },
+  "switch_account": {
+    "message": "Switch Account",
+    "description": "Switch account button"
+  },
+  "sign_out": {
+    "message": "Sign Out",
+    "description": "Sign out button"
+  },
+  "get_mobile_app_title": {
+    "message": "GET MOBILE APP",
+    "description": "Get mobile app section title"
+  },
+  "get_mobile_app_desc": {
+    "message": "Take Gotify on the go. Download the official Android client to receive real-time push notifications directly on your mobile device.",
+    "description": "Get mobile app description"
+  },
+  "scan_to_download": {
+    "message": "Scan to download APK",
+    "description": "Scan QR code to download"
+  },
+  "download_android_apk": {
+    "message": "Download Android APK",
+    "description": "Download Android APK button"
+  },
+  "advanced_settings": {
+    "message": "Advanced Settings",
+    "description": "Advanced settings section title"
   }
 }

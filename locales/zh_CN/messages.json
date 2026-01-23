@@ -354,5 +354,73 @@
   "qr_login_incomplete_config": {
     "message": "配置信息不完整，请先登录以生成二维码",
     "description": "配置不完整时的警告"
+  },
+  "settings_active": {
+    "message": "活跃",
+    "description": "活跃状态徽章"
+  },
+  "settings_inactive": {
+    "message": "未激活",
+    "description": "未激活状态徽章"
+  },
+  "settings_connected_to_server": {
+    "message": "已连接到服务器",
+    "description": "已连接到服务器状态"
+  },
+  "notification_preferences_title": {
+    "message": "通知偏好设置",
+    "description": "通知偏好设置区域标题"
+  },
+  "show_notification_on_tab_open": {
+    "message": "打开标签页时显示通知",
+    "description": "打开标签页时显示通知开关"
+  },
+  "show_notification_on_tab_open_desc": {
+    "message": "当标签页成功打开时显示确认通知",
+    "description": "打开标签页时显示通知描述"
+  },
+  "auto_open_missed_links": {
+    "message": "自动打开错过的链接",
+    "description": "自动打开错过的链接开关"
+  },
+  "auto_open_missed_links_desc": {
+    "message": "浏览器离线时收到的链接将在重新连接后自动打开",
+    "description": "自动打开错过的链接描述"
+  },
+  "account_section_title": {
+    "message": "账户",
+    "description": "账户区域标题"
+  },
+  "server_address": {
+    "message": "服务器地址",
+    "description": "服务器地址标签"
+  },
+  "switch_account": {
+    "message": "切换账户",
+    "description": "切换账户按钮"
+  },
+  "sign_out": {
+    "message": "退出登录",
+    "description": "退出登录按钮"
+  },
+  "get_mobile_app_title": {
+    "message": "获取移动应用",
+    "description": "获取移动应用区域标题"
+  },
+  "get_mobile_app_desc": {
+    "message": "随时随地使用 Gotify。下载官方 Android 客户端，直接在移动设备上接收实时推送通知。",
+    "description": "获取移动应用描述"
+  },
+  "scan_to_download": {
+    "message": "扫描下载 APK",
+    "description": "扫描二维码下载"
+  },
+  "download_android_apk": {
+    "message": "下载 Android APK",
+    "description": "下载 Android APK 按钮"
+  },
+  "advanced_settings": {
+    "message": "高级设置",
+    "description": "高级设置区域标题"
   }
 }

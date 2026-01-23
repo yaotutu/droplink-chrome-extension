@@ -1,5 +1,6 @@
 /**
  * 开关组件
+ * 更新样式以匹配新设计（蓝色激活状态）
  */
 
 interface SwitchProps {
@@ -18,7 +19,7 @@ export function Switch({ checked, onChange, disabled = false }: SwitchProps) {
       disabled={disabled}
       style={{
         ...styles.switch,
-        backgroundColor: checked ? "#2196f3" : "#ccc",
+        backgroundColor: checked ? "#2563EB" : "#E5E7EB",
         opacity: disabled ? 0.5 : 1,
         cursor: disabled ? "not-allowed" : "pointer"
       }}>
@@ -40,7 +41,7 @@ const styles: Record<string, React.CSSProperties> = {
     borderRadius: 28,
     border: "none",
     padding: 0,
-    transition: "background-color 0.3s",
+    transition: "background-color 0.2s ease-in-out",
     outline: "none"
   },
   slider: {
@@ -51,7 +52,7 @@ const styles: Record<string, React.CSSProperties> = {
     backgroundColor: "#fff",
     top: 2,
     left: 2,
-    transition: "transform 0.3s",
-    boxShadow: "0 1px 3px rgba(0,0,0,0.3)"
+    transition: "transform 0.2s ease-in-out",
+    boxShadow: "0 1px 3px rgba(0,0,0,0.2)"
   }
 }
