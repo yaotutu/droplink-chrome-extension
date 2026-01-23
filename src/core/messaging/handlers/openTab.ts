@@ -5,10 +5,14 @@
  * 遍历 actions 数组，处理所有 type === "openTab" 且 handler 为空或 "chrome" 的操作
  */
 
-import type { GotifyMessage } from "~/shared/types"
+import type { GotifyMessage, DroplinkAction } from "~/shared/types"
 
 import { showError, showSuccess } from "~/core/notifications"
-import { isActionForChrome } from "~/shared/utils/validators"
+import {
+  isActionForChrome,
+  isValidDroplinkUrl,
+  hasOpenTabAction
+} from "~/shared/utils/validators"
 import type { MessageContext } from "../context"
 import { MessageHandler } from "./base"
 
@@ -19,19 +23,11 @@ export class OpenTabHandler extends MessageHandler<GotifyMessage> {
     const droplink = message.extras?.droplink
     if (!droplink) return false
 
-    // 检查是否有由 Chrome Extension 处理的 openTab action
-    const hasOpenTabAction = droplink.actions?.some(
-      (action: any) => action.type === "openTab" && isActionForChrome(action)
+    // 使用共享的验证函数
+    return (
+      hasOpenTabAction(droplink.actions || []) &&
+      isValidDroplinkUrl(droplink.content)
     )
-
-    // 检查 content 是否为有效的 URL
-    const hasValidUrl =
-      droplink.content?.type === "url" &&
-      typeof droplink.content.value === "string" &&
-      (droplink.content.value.startsWith("http://") ||
-        droplink.content.value.startsWith("https://"))
-
-    return hasOpenTabAction && hasValidUrl
   }
 
   async handle(message: GotifyMessage, context: MessageContext): Promise<void> {
@@ -45,7 +41,8 @@ export class OpenTabHandler extends MessageHandler<GotifyMessage> {
     // 找到所有由 Chrome Extension 处理的 openTab actions
     const openTabActions =
       droplink.actions?.filter(
-        (action: any) => action.type === "openTab" && isActionForChrome(action)
+        (action: DroplinkAction) =>
+          action.type === "openTab" && isActionForChrome(action)
       ) || []
 
     // 处理每个 openTab action

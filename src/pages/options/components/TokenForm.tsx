@@ -82,7 +82,8 @@ export function TokenForm({ onLoginSuccess }: TokenFormProps) {
 
       console.log("[TokenForm] 配置已保存，等待自动连接...")
 
-      alert(t("success_login"))
+      // 登录成功，不显示 alert，让页面自动切换
+      console.log("[TokenForm] Token 登录成功")
       setClientToken("")
       setAppToken("")
       // 调用成功回调，触发父组件重新加载配置

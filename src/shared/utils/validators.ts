@@ -36,9 +36,25 @@ export function isValidGotifyUrl(url: string): boolean {
 /**
  * Token 验证
  * 检查 token 是否为有效字符串且长度足够
+ * 增强验证：检查字符类型和模式
  */
 export function isValidToken(token: string): boolean {
-  return typeof token === "string" && token.trim().length >= 10
+  if (typeof token !== "string") return false
+
+  const trimmed = token.trim()
+
+  // 检查长度（Gotify token 通常是 16 个字符的字母数字组合）
+  if (trimmed.length < 10) return false
+
+  // 检查是否只包含字母数字和常见的特殊字符
+  const validTokenPattern = /^[A-Za-z0-9._-]+$/
+  if (!validTokenPattern.test(trimmed)) return false
+
+  // 检查是否不是全部相同的字符（如 "0000000000"）
+  const allSameChar = /^(.)\1+$/.test(trimmed)
+  if (allSameChar) return false
+
+  return true
 }
 
 /**
@@ -64,4 +80,29 @@ export function isActionForChrome(action: {
   handler?: string
 }): boolean {
   return shouldHandleByChrome(action.handler)
+}
+
+/**
+ * 验证 Droplink 消息的 content 是否为有效的 URL
+ * @param content - Droplink 消息的 content 字段
+ * @returns 是否为有效的 URL content
+ */
+export function isValidDroplinkUrl(content: any): boolean {
+  return (
+    content?.type === "url" &&
+    typeof content.value === "string" &&
+    content.value.trim().length > 0 &&
+    (content.value.startsWith("http://") || content.value.startsWith("https://"))
+  )
+}
+
+/**
+ * 检查 Droplink actions 数组中是否包含 openTab action
+ * @param actions - Droplink actions 数组
+ * @returns 是否包含由 Chrome 处理的 openTab action
+ */
+export function hasOpenTabAction(actions: any[]): boolean {
+  return actions?.some(
+    (action: any) => action.type === "openTab" && isActionForChrome(action)
+  )
 }

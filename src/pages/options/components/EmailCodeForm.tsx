@@ -97,7 +97,8 @@ export function EmailCodeForm({ onLoginSuccess }: EmailCodeFormProps) {
       setCodeSent(true)
       setCountdown(60)
 
-      alert(t("success_code_sent"))
+      // 移除 alert，用户可以通过倒计时看到验证码已发送
+      console.log("[EmailCodeForm] 验证码发送成功")
     } catch (error: any) {
       alert(`${t("error_send_code_failed").replace("{error}", error.message || error)}`)
     } finally {
@@ -177,12 +178,10 @@ export function EmailCodeForm({ onLoginSuccess }: EmailCodeFormProps) {
 
       console.log("[EmailCodeForm] 配置已保存，等待自动连接...")
 
-      // 显示成功提示
-      if (isNewUser) {
-        alert(t("success_register"))
-      } else {
-        alert(t("success_login"))
-      }
+      // 登录成功，不显示 alert，让页面自动切换
+      console.log(
+        `[EmailCodeForm] ${isNewUser ? "注册" : "登录"}成功，用户: ${email}`
+      )
 
       // 清空表单
       setEmail("")

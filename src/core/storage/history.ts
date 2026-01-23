@@ -124,6 +124,7 @@ export async function markAsProcessed(ids: number[]): Promise<void> {
  * @param id 消息 ID
  * @param processedIds 已处理的消息 ID 列表
  * @returns true 表示已处理，false 表示未处理
+ * @deprecated 建议使用 Set 数据结构以提高性能：`new Set(processedIds).has(id)`
  */
 export function isProcessed(id: number, processedIds: number[]): boolean {
   return processedIds.includes(id)

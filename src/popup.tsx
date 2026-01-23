@@ -21,6 +21,16 @@ function IndexPopup() {
   useEffect(() => {
     loadConfig()
     loadStatus()
+
+    // 定期更新状态（每 5 秒）
+    const intervalId = setInterval(() => {
+      loadStatus()
+    }, 5000)
+
+    // 清理定时器
+    return () => {
+      clearInterval(intervalId)
+    }
   }, [loadConfig, loadStatus])
 
   // 打开设置页面

@@ -14,6 +14,10 @@ import {
 } from "~/core/storage/history"
 import { getConfig } from "~/core/storage"
 import { showInfo, showError } from "~/core/notifications"
+import {
+  isValidDroplinkUrl,
+  hasOpenTabAction
+} from "~/shared/utils/validators"
 
 export class HistorySyncManager {
   private isSyncing = false // 防止并发同步
@@ -127,33 +131,20 @@ export class HistorySyncManager {
     const processedIds = await getProcessedIds()
     console.log(`[HistorySync] 已处理消息数量: ${processedIds.length}`)
 
-    // 2. 过滤：移除已处理的消息
-    const unprocessed = messages.filter((msg) => !isProcessed(msg.id, processedIds))
+    // 2. 过滤：移除已处理的消息（使用 Set 提高性能）
+    const processedSet = new Set(processedIds)
+    const unprocessed = messages.filter((msg) => !processedSet.has(msg.id))
     console.log(`[HistorySync] 过滤已处理消息后剩余: ${unprocessed.length} 条`)
 
-    // 3. 过滤：只保留有效的 Droplink 消息
+    // 3. 过滤：只保留有效的 Droplink 消息（使用共享验证函数）
     const droplinkMessages = unprocessed.filter((msg) => {
-      // 检查是否包含 droplink 字段
-      if (!msg.extras?.droplink) {
-        return false
-      }
+      const droplink = msg.extras?.droplink
+      if (!droplink) return false
 
-      // 检查是否包含 openTab action
-      const hasOpenTabAction = msg.extras.droplink.actions?.some(
-        (action) => action.type === "openTab"
+      return (
+        hasOpenTabAction(droplink.actions || []) &&
+        isValidDroplinkUrl(droplink.content)
       )
-
-      if (!hasOpenTabAction) {
-        return false
-      }
-
-      // 检查是否有有效的 URL
-      const hasValidUrl =
-        msg.extras.droplink.content?.type === "url" &&
-        typeof msg.extras.droplink.content.value === "string" &&
-        msg.extras.droplink.content.value.trim().length > 0
-
-      return hasValidUrl
     })
 
     console.log(

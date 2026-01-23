@@ -11,8 +11,12 @@ import { isValidGotifyUrl, isValidToken } from "~/shared/utils/validators"
 const STORAGE_KEY = "droplink_config"
 
 /** 全局监听器引用，用于防止重复注册 */
-let configChangeListener: ((changes: any, areaName: string) => void) | null =
-  null
+let configChangeListener:
+  | ((
+      changes: chrome.storage.StorageChange,
+      areaName: chrome.storage.AreaName
+    ) => void)
+  | null = null
 
 /**
  * 获取配置

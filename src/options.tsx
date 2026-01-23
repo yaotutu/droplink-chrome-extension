@@ -61,9 +61,9 @@ function OptionsPage() {
 
   /**
    * 登录成功回调
+   * 注意：不需要手动 loadConfig，chrome.storage.onChanged 会自动触发配置更新
    */
   const handleLoginSuccess = () => {
-    loadConfig() // 重新加载配置
     loadStatus() // 加载连接状态
   }
 

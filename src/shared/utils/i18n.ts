@@ -125,9 +125,10 @@ export function tWithPlaceholders(
   }
 
   // 手动替换占位符 {KEY} -> value
+  // 使用 split().join() 避免正则表达式特殊字符问题
   Object.entries(placeholders).forEach(([key, value]) => {
     const placeholder = `{${key}}`
-    message = message.replace(new RegExp(placeholder, "g"), value)
+    message = message.split(placeholder).join(value)
   })
 
   return message
