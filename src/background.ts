@@ -28,6 +28,7 @@ const messageHandler = new RuntimeMessageHandler(connectionManager)
 // 防止重复初始化
 let isInitializing = false
 let isInitialized = false
+let isConfigSyncInitialized = false // 防止重复注册配置监听器
 
 /**
  * 初始化扩展
@@ -40,37 +41,49 @@ async function initialize(): Promise<void> {
   }
 
   isInitializing = true
-  console.log("[Background] 初始化 Droplink 扩展")
+  try {
+    console.log("[Background] 初始化 Droplink 扩展")
 
-  // 读取配置
-  const config = await getConfig()
-  console.log("[Background] 已读取配置:", {
-    ...config,
-    clientToken: config.clientToken ? "***" : "(空)"
-  })
+    // 读取配置
+    const config = await getConfig()
+    console.log("[Background] 已读取配置:", {
+      ...config,
+      clientToken: config.clientToken ? "***" : "(空)"
+    })
 
-  // 设置路由器配置
-  router.setConfig(config)
+    // 设置路由器配置
+    router.setConfig(config)
 
-  // 检查配置是否有效
-  const configValid = isConfigValid(config)
-  connectionManager.updateConfigValidity(configValid)
+    // 检查配置是否有效
+    const configValid = isConfigValid(config)
+    connectionManager.updateConfigValidity(configValid)
 
-  // 如果配置有效，则连接
-  if (configValid) {
-    console.log("[Background] 配置有效，建立连接...")
-    await connectionManager.connect(config)
-    console.log("[Background] 连接已建立")
-  } else {
-    console.log("[Background] 配置无效，跳过连接")
+    // 如果配置有效，则连接
+    if (configValid) {
+      console.log("[Background] 配置有效，建立连接...")
+      await connectionManager.connect(config)
+      console.log("[Background] 连接已建立")
+    } else {
+      console.log("[Background] 配置无效，跳过连接")
+    }
+
+    // 只注册一次配置监听器
+    if (!isConfigSyncInitialized) {
+      onConfigChange(handleConfigChange)
+      isConfigSyncInitialized = true
+      console.log("[Background] 配置监听器已注册")
+    }
+
+    isInitialized = true
+    console.log("[Background] 初始化完成")
+  } catch (error) {
+    console.error("[Background] 初始化失败:", error)
+    // 不设置 isInitialized = true，允许重试
+    throw error
+  } finally {
+    // 确保标志位被重置，允许后续重试
+    isInitializing = false
   }
-
-  // 监听配置变化（作为备份机制，主要依赖主动 reconnect 消息）
-  onConfigChange(handleConfigChange)
-
-  isInitializing = false
-  isInitialized = true
-  console.log("[Background] 初始化完成")
 }
 
 /**

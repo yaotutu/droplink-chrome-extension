@@ -10,6 +10,10 @@ import { isValidGotifyUrl, isValidToken } from "~/shared/utils/validators"
 /** Storage key */
 const STORAGE_KEY = "droplink_config"
 
+/** 全局监听器引用，用于防止重复注册 */
+let configChangeListener: ((changes: any, areaName: string) => void) | null =
+  null
+
 /**
  * 获取配置
  */
@@ -104,11 +108,19 @@ export function validateToken(token: string): {
 
 /**
  * 监听配置变化
+ * 防止重复注册：如果已有监听器，会先移除旧的再注册新的
  */
 export function onConfigChange(
   callback: (newConfig: Config, oldConfig: Config) => void
 ): void {
-  chrome.storage.onChanged.addListener((changes, areaName) => {
+  // 如果已经注册过，先移除旧的监听器
+  if (configChangeListener) {
+    console.log("[Storage] 移除旧的配置监听器")
+    chrome.storage.onChanged.removeListener(configChangeListener)
+  }
+
+  // 创建新的监听器
+  configChangeListener = (changes, areaName) => {
     if (areaName === "sync" && changes[STORAGE_KEY]) {
       const oldConfig =
         (changes[STORAGE_KEY].oldValue as Config | undefined) || {
@@ -120,5 +132,21 @@ export function onConfigChange(
         callback(newConfig, oldConfig)
       }
     }
-  })
+  }
+
+  // 注册新的监听器
+  chrome.storage.onChanged.addListener(configChangeListener)
+  console.log("[Storage] 配置监听器已注册")
+}
+
+/**
+ * 移除配置变化监听器
+ * 用于清理资源（可选）
+ */
+export function offConfigChange(): void {
+  if (configChangeListener) {
+    console.log("[Storage] 移除配置监听器")
+    chrome.storage.onChanged.removeListener(configChangeListener)
+    configChangeListener = null
+  }
 }

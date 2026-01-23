@@ -12,6 +12,7 @@ import type { HistorySyncManager } from "./history-sync-manager"
 
 export class ConnectionManager {
   private client: GotifyClient | null = null
+  private connectPromise: Promise<void> | null = null // 用于防止并发连接
   private statusInfo: StatusInfo = {
     status: ConnectionStatus.DISCONNECTED,
     configValid: false
@@ -29,8 +30,27 @@ export class ConnectionManager {
 
   /**
    * 连接到 Gotify 服务器
+   * 如果已有连接操作在进行中，返回现有的 Promise
    */
   async connect(config: Config): Promise<void> {
+    // 如果正在连接，返回现有的 Promise
+    if (this.connectPromise) {
+      console.log("[ConnectionManager] 连接正在进行中，等待完成")
+      return this.connectPromise
+    }
+
+    this.connectPromise = this._doConnect(config)
+    try {
+      await this.connectPromise
+    } finally {
+      this.connectPromise = null
+    }
+  }
+
+  /**
+   * 实际的连接逻辑
+   */
+  private async _doConnect(config: Config): Promise<void> {
     // 如果已存在连接，先断开
     if (this.client) {
       console.log("[ConnectionManager] 断开旧连接")
@@ -38,17 +58,18 @@ export class ConnectionManager {
       this.client = null // 显式释放引用，确保旧客户端被垃圾回收
     }
 
-    this.client = new GotifyClient()
+    console.log("[ConnectionManager] 创建新的 Gotify 客户端")
+    const newClient = new GotifyClient()
 
     // 注册消息处理器
-    this.client.onMessage((message) => {
+    newClient.onMessage((message) => {
       this.router.route(message).catch((error) => {
         console.error("[ConnectionManager] 路由消息失败:", error)
       })
     })
 
     // 注册状态变化处理器
-    this.client.onStatusChange((status) => {
+    newClient.onStatusChange((status) => {
       this.statusInfo.status = status
       if (status === ConnectionStatus.CONNECTED) {
         this.statusInfo.lastConnected = new Date().toISOString()
@@ -68,8 +89,20 @@ export class ConnectionManager {
       this.updateIcon()
     })
 
-    // 建立连接
-    await this.client.connect(config)
+    try {
+      // 尝试建立连接
+      console.log("[ConnectionManager] 开始连接到 Gotify 服务器")
+      await newClient.connect(config)
+
+      // 连接成功后才设置 this.client
+      this.client = newClient
+      console.log("[ConnectionManager] 连接成功")
+    } catch (error) {
+      // 连接失败，清理客户端
+      console.error("[ConnectionManager] 连接失败:", error)
+      newClient.disconnect()
+      throw error
+    }
   }
 
   /**
@@ -77,6 +110,7 @@ export class ConnectionManager {
    */
   disconnect(): void {
     console.log("[ConnectionManager] 断开连接")
+    this.connectPromise = null // 清除连接 Promise
     if (this.client) {
       this.client.disconnect()
       this.client = null
