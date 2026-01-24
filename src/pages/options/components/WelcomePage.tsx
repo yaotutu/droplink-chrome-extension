@@ -65,14 +65,6 @@ export const WelcomePage: React.FC = () => {
 
   return (
     <div style={styles.container}>
-      {/* 主标题 */}
-      <div style={styles.header}>
-        <h1 style={styles.title}>{t("welcome_page_title")}</h1>
-        <p style={styles.subtitle}>
-          {t("welcome_page_subtitle")}
-        </p>
-      </div>
-
       {/* 主卡片 - 包含两列内容 */}
       <div style={styles.mainCard}>
         <div style={styles.twoColumns}>
@@ -86,11 +78,13 @@ export const WelcomePage: React.FC = () => {
               {t("get_mobile_app_desc")}
             </p>
 
-            {/* 二维码 - 简单边框样式 */}
+            {/* 二维码 - 统一样式 */}
             <div style={styles.qrContainerLeft}>
-            <div style={styles.qrBoxLeft}>
-              <QRCodeDisplay value={downloadQRValue} size={175} level="M" />
-            </div>
+              <div style={styles.qrCard}>
+                <div style={styles.qrBox}>
+                  <QRCodeDisplay value={downloadQRValue} size={240} level="M" />
+                </div>
+              </div>
               <div style={styles.qrLabel}>{t("scan_to_download")}</div>
             </div>
 
@@ -111,12 +105,12 @@ export const WelcomePage: React.FC = () => {
               {t("connect_extension_desc")}
             </p>
 
-            {/* 二维码 - 3D卡片样式 */}
+            {/* 二维码 - 统一样式 */}
             <div style={styles.qrContainerRight}>
-              <div style={styles.qrCard3D}>
-                <div style={styles.qrBoxRight}>
+              <div style={styles.qrCard}>
+                <div style={styles.qrBox}>
                   {isConfigComplete ? (
-                    <QRCodeDisplay value={qrValue} size={175} level="H" />
+                    <QRCodeDisplay value={qrValue} size={240} level="H" />
                   ) : (
                     <span style={styles.qrIconLarge}>🔗</span>
                   )}
@@ -178,7 +172,7 @@ const styles: Record<string, React.CSSProperties> = {
     backgroundColor: colors.card,
     borderRadius: "14px",
     boxShadow: shadows.lg,
-    padding: spacing.lg,
+    padding: spacing.xl,
     marginBottom: spacing.md,
     flex: 1,
     display: "flex",
@@ -222,53 +216,37 @@ const styles: Record<string, React.CSSProperties> = {
     lineHeight: "1.5",
     marginBottom: spacing.md
   },
-  // 左侧二维码 - 简单边框
+  // 二维码容器 - 统一样式
   qrContainerLeft: {
     display: "flex",
     flexDirection: "column",
     alignItems: "center",
     marginBottom: spacing.sm
   },
-  qrBoxLeft: {
-    width: "190px",
-    height: "190px",
-    backgroundColor: colors.card,
-    border: `1px solid ${colors.border}`,
-    borderRadius: borderRadius.lg,
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    marginBottom: spacing.xs,
-    padding: spacing.sm,
-    boxShadow: "0 4px 10px rgba(17, 24, 39, 0.06)"
-  },
-  // 右侧二维码 - 3D卡片效果
   qrContainerRight: {
     display: "flex",
-    justifyContent: "center",
-    marginBottom: spacing.sm,
-    perspective: "1000px"
+    flexDirection: "column",
+    alignItems: "center",
+    marginBottom: spacing.sm
   },
-  qrCard3D: {
-    position: "relative",
+  // 统一的二维码卡片样式
+  qrCard: {
     padding: spacing.lg,
     backgroundColor: colors.card,
     borderRadius: borderRadius.lg,
-    boxShadow:
-      "0 12px 24px rgba(37, 99, 235, 0.15), 0 6px 14px rgba(17, 24, 39, 0.08)",
-    transform: "rotateY(-6deg)",
-    border: `2px solid rgba(37, 99, 235, 0.35)`
+    boxShadow: "0 8px 16px rgba(37, 99, 235, 0.12), 0 4px 8px rgba(17, 24, 39, 0.06)",
+    border: `1px solid ${colors.border}`,
+    marginBottom: spacing.xs
   },
-  qrBoxRight: {
-    width: "190px",
-    height: "190px",
+  qrBox: {
+    width: "256px",
+    height: "256px",
     backgroundColor: colors.background,
     borderRadius: borderRadius.md,
     display: "flex",
     alignItems: "center",
     justifyContent: "center",
-    padding: spacing.sm,
-    boxShadow: "inset 0 0 0 1px rgba(17, 24, 39, 0.06)"
+    padding: spacing.sm
   },
   qrIconLarge: {
     fontSize: "40px",

@@ -86,6 +86,14 @@ export type I18nKey =
   | "auth_server_placeholder"
   | "auto_register_hint"
   | "twitter_link"
+  | "get_mobile_app_title"
+  | "get_mobile_app_desc"
+  | "scan_to_download"
+  | "download_android_apk"
+  | "connect_extension_title"
+  | "connect_extension_desc"
+  | "refresh_qr_code"
+  | "qr_code_expiry_hint"
 
 /**
  * 获取翻译文本

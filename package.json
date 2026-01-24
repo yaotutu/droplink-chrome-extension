@@ -1,7 +1,7 @@
 {
   "name": "droplink-chrome-extension",
   "displayName": "Droplink - Cross-Device Link Sharing",
-  "version": "1.0.0",
+  "version": "0.1.2",
   "description": "Instantly receive links from your phone to your browser. One tap on mobile, auto-open on desktop.",
   "author": "yaotutu",
   "homepage": "https://github.com/yaotutu/droplink",
