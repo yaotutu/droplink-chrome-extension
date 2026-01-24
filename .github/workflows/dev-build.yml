@@ -9,10 +9,16 @@ on:
   # 允许手动触发
   workflow_dispatch:
 
+# 授予 GitHub Actions 创建 Release 的权限
+permissions:
+  contents: write
+
 jobs:
   build:
     name: 构建 Dev 版本
     uses: ./.github/workflows/build-shared.yml
+    permissions:
+      contents: write
     with:
       branch_name: dev
       release_tag: dev-latest
