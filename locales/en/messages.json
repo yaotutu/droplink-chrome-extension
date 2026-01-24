@@ -12,8 +12,8 @@
     "description": "Button to open settings page"
   },
   "please_configure_server": {
-    "message": "Please configure Gotify server first",
-    "description": "Warning message when server is not configured"
+    "message": "Please login to use Droplink",
+    "description": "Warning message when not logged in"
   },
   "settings_title": {
     "message": "{APP_NAME} Settings",
@@ -107,9 +107,13 @@
     "message": "Login with email verification code or client token",
     "description": "Login page description"
   },
+  "auto_register_hint": {
+    "message": "💡 First-time email login will automatically create an account",
+    "description": "Auto register hint"
+  },
   "email_code_login": {
-    "message": "Email Code Login",
-    "description": "Email code login tab"
+    "message": "Official Server",
+    "description": "Official server login tab"
   },
   "token_login": {
     "message": "Token Login",
@@ -160,11 +164,11 @@
     "description": "Error: login failed"
   },
   "email_label": {
-    "message": "Email Address *",
+    "message": "Email Address",
     "description": "Email address label"
   },
   "verification_code_label": {
-    "message": "Verification Code *",
+    "message": "Verification Code",
     "description": "Verification code label"
   },
   "email_placeholder": {
@@ -204,7 +208,7 @@
     "description": "Error: connection failed"
   },
   "client_token_label": {
-    "message": "Client Token *",
+    "message": "Client Token",
     "description": "Client token label"
   },
   "token_placeholder": {
@@ -272,7 +276,7 @@
     "description": "Filter open tab messages description"
   },
   "auth_server_label": {
-    "message": "Auth Server URL *",
+    "message": "Auth Server URL",
     "description": "Auth server URL label"
   },
   "auth_server_placeholder": {
@@ -280,7 +284,7 @@
     "description": "Auth server URL placeholder"
   },
   "gotify_server_label": {
-    "message": "Gotify Server URL *",
+    "message": "Gotify Server URL",
     "description": "Gotify server URL label"
   },
   "gotify_server_placeholder": {
@@ -472,16 +476,20 @@
     "description": "Back button label"
   },
   "help_link": {
-    "message": "Help",
-    "description": "Help link label"
-  },
-  "documentation_link": {
-    "message": "Documentation",
+    "message": "Docs",
     "description": "Documentation link label"
   },
+  "documentation_link": {
+    "message": "Website",
+    "description": "Website link label"
+  },
   "support_link": {
-    "message": "Support",
-    "description": "Support link label"
+    "message": "GitHub",
+    "description": "GitHub link label"
+  },
+  "twitter_link": {
+    "message": "Twitter",
+    "description": "Twitter link label"
   },
   "settings_button": {
     "message": "Settings",
@@ -496,7 +504,7 @@
     "description": "Security FAQ link label"
   },
   "footer_copyright": {
-    "message": "© 2024 Droplink. All rights reserved. Built for security and privacy.",
+    "message": "© {year} Droplink. All rights reserved. Built for security and privacy.",
     "description": "Footer copyright text"
   }
 }

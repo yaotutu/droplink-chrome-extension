@@ -76,25 +76,32 @@ export const Layout: React.FC<LayoutProps> = ({
           {/* 导航链接 */}
           <nav style={styles.nav}>
             <a
-              href="https://github.com/yaotutu/droplink"
+              href="https://yaotutu.github.io/droplink/getting-started.html"
               target="_blank"
               rel="noopener noreferrer"
               style={styles.navLink}>
               {t("help_link")}
             </a>
             <a
-              href="https://github.com/yaotutu/droplink#readme"
+              href="https://yaotutu.github.io/droplink/"
               target="_blank"
               rel="noopener noreferrer"
               style={styles.navLink}>
               {t("documentation_link")}
             </a>
             <a
-              href="https://github.com/yaotutu/droplink/issues"
+              href="https://github.com/yaotutu/droplink"
               target="_blank"
               rel="noopener noreferrer"
               style={styles.navLink}>
               {t("support_link")}
+            </a>
+            <a
+              href="https://x.com/yao_tu_tu"
+              target="_blank"
+              rel="noopener noreferrer"
+              style={styles.navLink}>
+              {t("twitter_link")}
             </a>
 
             {/* Settings 按钮（仅在已登录时显示） */}
@@ -117,18 +124,8 @@ export const Layout: React.FC<LayoutProps> = ({
 
       {/* 页脚 */}
       <footer style={styles.footer}>
-        <div style={styles.footerLinks}>
-          <a href="#" style={styles.footerLink}>
-            <span style={styles.footerIcon}>❓</span>
-            {t("help_center_link")}
-          </a>
-          <a href="#" style={styles.footerLink}>
-            <span style={styles.footerIcon}>🔒</span>
-            {t("security_faq_link")}
-          </a>
-        </div>
         <div style={styles.footerText}>
-          {t("footer_copyright")}
+          {t("footer_copyright").replace("{year}", new Date().getFullYear().toString())}
         </div>
       </footer>
     </div>

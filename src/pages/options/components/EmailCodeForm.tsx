@@ -212,6 +212,11 @@ export function EmailCodeForm({ onLoginSuccess }: EmailCodeFormProps) {
 
   return (
     <form onSubmit={handleSubmit} style={styles.form}>
+      {/* 自动注册提示 */}
+      <div style={styles.hintBox}>
+        <span style={styles.hintText}>{t("auto_register_hint")}</span>
+      </div>
+
       <div style={styles.formGroup}>
         <label style={styles.label}>
           {t("auth_server_label")} <span style={styles.required}>*</span>
@@ -289,8 +294,6 @@ export function EmailCodeForm({ onLoginSuccess }: EmailCodeFormProps) {
         disabled={loading || verifying}>
         {verifying ? t("logging_in") : t("login")}
       </button>
-
-      <div style={styles.hint}>{t("email_code_hint")}</div>
     </form>
   )
 }
@@ -300,6 +303,19 @@ const styles: Record<string, React.CSSProperties> = {
     display: "flex",
     flexDirection: "column",
     gap: 16
+  },
+  hintBox: {
+    backgroundColor: "#e3f2fd",
+    borderLeft: "4px solid #2196f3",
+    borderRadius: 4,
+    padding: "12px 16px",
+    marginBottom: 8
+  },
+  hintText: {
+    fontSize: 14,
+    color: "#1976d2",
+    lineHeight: 1.5,
+    fontWeight: "500"
   },
   formGroup: {
     display: "flex",

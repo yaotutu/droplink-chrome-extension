@@ -84,6 +84,8 @@ export type I18nKey =
   | "gotify_server_placeholder"
   | "auth_server_label"
   | "auth_server_placeholder"
+  | "auto_register_hint"
+  | "twitter_link"
 
 /**
  * 获取翻译文本

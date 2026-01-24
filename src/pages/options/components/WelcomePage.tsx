@@ -20,8 +20,8 @@ import { GOTIFY_SERVER_URL } from "~/shared/utils/constants"
 import { t } from "~/shared/utils/i18n"
 
 export const WelcomePage: React.FC = () => {
-  // TODO: 替换为实际的移动应用下载链接
-  const APK_DOWNLOAD_URL = "https://github.com/yaotutu/droplink/releases"
+  // Android APK 下载链接
+  const APK_DOWNLOAD_URL = "https://github.com/yaotutu/droplink-android/releases/download/main-latest/droplink-release.apk"
 
   // 从 store 读取配置
   const config = useStore((state) => state.config)

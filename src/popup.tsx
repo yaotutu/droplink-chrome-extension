@@ -6,7 +6,6 @@ import { useEffect } from "react"
 import { useStore } from "~/shared/store"
 import { StatusCard } from "~/pages/popup/components/StatusCard"
 import { WarningCard } from "~/pages/popup/components/WarningCard"
-import { APP_VERSION } from "~/shared/utils/constants"
 import { t } from "~/shared/utils/i18n"
 
 function IndexPopup() {
@@ -51,7 +50,6 @@ function IndexPopup() {
       {/* 页面标题 */}
       <div style={styles.header}>
         <h2 style={styles.title}>{t("app_name")}</h2>
-        <div style={styles.version}>v{APP_VERSION}</div>
       </div>
 
       {/* 连接状态 */}
@@ -78,9 +76,6 @@ const styles: Record<string, React.CSSProperties> = {
     backgroundColor: "#f5f5f5"
   },
   header: {
-    display: "flex",
-    justifyContent: "space-between",
-    alignItems: "center",
     marginBottom: 16
   },
   title: {
@@ -88,10 +83,6 @@ const styles: Record<string, React.CSSProperties> = {
     fontWeight: "bold",
     margin: 0,
     color: "#333"
-  },
-  version: {
-    fontSize: 12,
-    color: "#999"
   },
   settingsButton: {
     width: "100%",

@@ -12,8 +12,8 @@
     "description": "打开设置页面的按钮"
   },
   "please_configure_server": {
-    "message": "请先配置 Gotify 服务器",
-    "description": "未配置服务器时的警告信息"
+    "message": "请先登录以使用 Droplink",
+    "description": "未登录时的提示信息"
   },
   "settings_title": {
     "message": "{APP_NAME} 设置",
@@ -107,9 +107,13 @@
     "message": "使用邮箱验证码或客户端 Token 登录",
     "description": "登录页面描述"
   },
+  "auto_register_hint": {
+    "message": "💡 首次使用邮箱登录将自动注册账号",
+    "description": "自动注册提示"
+  },
   "email_code_login": {
-    "message": "邮箱验证码登录",
-    "description": "邮箱验证码登录标签页"
+    "message": "官方服务器",
+    "description": "官方服务器登录标签页"
   },
   "token_login": {
     "message": "Token 登录",
@@ -160,11 +164,11 @@
     "description": "错误：登录失败"
   },
   "email_label": {
-    "message": "邮箱地址 *",
+    "message": "邮箱地址",
     "description": "邮箱地址标签"
   },
   "verification_code_label": {
-    "message": "验证码 *",
+    "message": "验证码",
     "description": "验证码标签"
   },
   "email_placeholder": {
@@ -204,7 +208,7 @@
     "description": "错误：连接失败"
   },
   "client_token_label": {
-    "message": "客户端 Token *",
+    "message": "客户端 Token",
     "description": "客户端 Token 标签"
   },
   "token_placeholder": {
@@ -272,7 +276,7 @@
     "description": "过滤打开标签页消息描述"
   },
   "auth_server_label": {
-    "message": "认证服务器地址 *",
+    "message": "认证服务器地址",
     "description": "认证服务器地址标签"
   },
   "auth_server_placeholder": {
@@ -280,7 +284,7 @@
     "description": "认证服务器地址占位符"
   },
   "gotify_server_label": {
-    "message": "Gotify 服务器地址 *",
+    "message": "Gotify 服务器地址",
     "description": "Gotify 服务器地址标签"
   },
   "gotify_server_placeholder": {
@@ -472,16 +476,20 @@
     "description": "返回按钮标签"
   },
   "help_link": {
-    "message": "帮助",
-    "description": "帮助链接标签"
-  },
-  "documentation_link": {
     "message": "文档",
     "description": "文档链接标签"
   },
+  "documentation_link": {
+    "message": "官网",
+    "description": "官网链接标签"
+  },
   "support_link": {
-    "message": "支持",
-    "description": "支持链接标签"
+    "message": "GitHub",
+    "description": "GitHub链接标签"
+  },
+  "twitter_link": {
+    "message": "Twitter",
+    "description": "Twitter链接标签"
   },
   "settings_button": {
     "message": "设置",
@@ -496,7 +504,7 @@
     "description": "安全常见问题链接标签"
   },
   "footer_copyright": {
-    "message": "© 2024 Droplink. 保留所有权利。为安全和隐私而构建。",
+    "message": "© {year} Droplink. 保留所有权利。为安全和隐私而构建。",
     "description": "页脚版权文本"
   }
 }
