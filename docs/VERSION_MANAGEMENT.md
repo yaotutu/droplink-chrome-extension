@@ -19,6 +19,8 @@
 1.0.42-dev  (42 是提交总数)
 ```
 
+**文件名**: `droplink-dev-1.0.42-dev.zip`
+
 **用途**:
 - 日常开发测试
 - 快速迭代
@@ -27,7 +29,7 @@
 ---
 
 ### 2. 正式版 (main-latest) ⭐
-**触发**: 推送到 `main` 分支
+**触发**: 推送到 `master` 分支
 
 **版本号**: 从 `package.json` 读取
 ```json
@@ -38,28 +40,27 @@
 
 **文件名**: `droplink-v1.0.0.zip`
 
+**自动归档**: 同时创建 `v1.0.0` Release 用于历史归档
+
 **用途**:
 - 稳定发布
 - 用户下载
 - 扩展显示的版本号
+- 自动保留历史版本
 
 ---
 
-### 3. 特定版本 Release (v1.0.0)
-**触发**: 推送 Git Tag `v*`
+### 3. 历史归档版本 (v1.0.0)
+**触发**: 推送到 `master` 分支时自动创建
 
-**版本号**: 从 Git Tag 读取
-```bash
-git tag v1.0.0
-git push origin v1.0.0
-```
+**版本号**: 与 `package.json` 一致
 
 **文件名**: `droplink-v1.0.0.zip`
 
 **用途**:
-- 里程碑版本
-- 历史版本归档
-- 不会覆盖 main-latest
+- 自动归档每个正式版本
+- 用户可以下载历史版本
+- 不会被覆盖，永久保留
 
 ---
 
@@ -75,22 +76,25 @@ git push origin v1.0.0
    }
    ```
 
-2. **提交并推送到 main**
+2. **提交并推送到 master**
    ```bash
    git add package.json
    git commit -m "chore: bump version to 1.1.0"
-   git push origin main
+   git push origin master
    ```
 
 3. **GitHub Actions 自动构建**
    - 读取 package.json 的版本号 `1.1.0`
    - 构建扩展
-   - 发布到 `main-latest` Release
+   - 发布到 `main-latest` Release（覆盖旧版本）
+   - **自动创建 `v1.1.0` Release 用于历史归档**
    - 文件名: `droplink-v1.1.0.zip`
 
 4. **用户看到的版本号**
    - 扩展设置页面: `v1.1.0`
    - 下载文件名: `droplink-v1.1.0.zip`
+   - main-latest Release: `v1.1.0`（最新版，会被覆盖）
+   - v1.1.0 Release: `v1.1.0`（历史归档，永久保留）
    - **完全一致！** ✅
 
 ---
@@ -103,22 +107,15 @@ npm version patch  # 1.0.0 -> 1.0.1
 npm version minor  # 1.0.0 -> 1.1.0
 npm version major  # 1.0.0 -> 2.0.0
 
-# 推送到 main
-git push origin main
+# 推送到 master
+git push origin master
 ```
 
 ---
 
-### 方法 3: 创建特定版本 Tag
+### 方法 3: ~~创建特定版本 Tag~~（已废弃）
 
-```bash
-# 1. 确保 package.json 版本号正确
-# 2. 创建并推送 tag
-git tag v1.0.0
-git push origin v1.0.0
-
-# 这会触发 release.yml，创建独立的版本 Release
-```
+~~不再需要手动创建 Git Tag，推送到 master 分支时会自动创建版本归档。~~
 
 ---
 
@@ -206,7 +203,7 @@ git commit -m "fix: resolve login timeout issue"
 # 方法 1: 修改 package.json 并推送
 # 方法 2: 使用 git revert
 git revert <commit-hash>
-git push origin main
+git push origin master
 ```
 
 ### Q: dev 版本号为什么不同？
@@ -236,4 +233,49 @@ node -p "require('./package.json').version"
 
 **记住一句话**：`package.json` 是版本号的唯一来源！
 
-修改版本号 → 推送到 main → 自动构建 → 版本号一致 ✅
+修改版本号 → 推送到 master → 自动构建 → 版本号一致 ✅
+
+---
+
+## 🏗️ GitHub Actions 架构
+
+### 共享 Workflow 设计
+
+为了避免代码重复，我们使用了 **可复用 workflow** 架构：
+
+```
+build-shared.yml (共享逻辑)
+    ↑              ↑
+    │              │
+dev-build.yml  main-build.yml
+(调用者)        (调用者)
+```
+
+**优势**：
+- ✅ **DRY 原则**：构建逻辑只写一次，避免重复
+- ✅ **易于维护**：修改构建逻辑只需改一个文件
+- ✅ **参数化配置**：通过参数控制不同行为
+- ✅ **类型安全**：workflow_call 提供参数验证
+
+### 关键差异参数
+
+| 参数 | dev-build | main-build |
+|------|-----------|------------|
+| `branch_name` | dev | master |
+| `release_tag` | dev-latest | main-latest |
+| `use_commit_count` | true | false |
+| `file_prefix` | droplink-dev- | droplink-v |
+| `is_prerelease` | true | false |
+
+### 版本号逻辑
+
+```yaml
+# build-shared.yml 中的版本号逻辑
+if [ "$use_commit_count" = "true" ]; then
+  # Dev 版本：使用提交计数
+  VERSION_NAME="1.0.${COMMIT_COUNT}-dev"
+else
+  # 正式版本：从 package.json 读取
+  VERSION_NAME=$(node -p "require('./package.json').version")
+fi
+```

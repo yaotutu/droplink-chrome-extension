@@ -1,164 +1,28 @@
 name: Chrome Extension Main Build
 
 on:
-  # 推送到 main 分支时触发
+  # 推送到 master 分支时触发
   push:
     branches:
-      - main
+      - master
 
   # PR 检查
   pull_request:
     branches:
-      - main
+      - master
 
   # 允许手动触发
   workflow_dispatch:
 
-# 授予 GitHub Actions 创建 Release 的权限
-permissions:
-  contents: write  # 允许创建/更新 Release 和 Tag
-
 jobs:
   build:
     name: 构建 Release 版本
-    runs-on: ubuntu-latest
-
-    steps:
-      # 检出代码
-      - name: Checkout
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0  # 获取完整历史记录，用于计算提交总数
-
-      # 设置 Node.js
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '18'
-
-      # 设置 pnpm
-      - name: Setup pnpm
-        uses: pnpm/action-setup@v2
-        with:
-          version: 10
-
-      # 获取 pnpm store 目录
-      - name: Get pnpm store directory
-        shell: bash
-        run: |
-          echo "STORE_PATH=$(pnpm store path --silent)" >> $GITHUB_ENV
-
-      # 缓存依赖
-      - name: Setup pnpm cache
-        uses: actions/cache@v3
-        with:
-          path: ${{ env.STORE_PATH }}
-          key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
-          restore-keys: |
-            ${{ runner.os }}-pnpm-store-
-
-      # 安装依赖
-      - name: Install dependencies
-        run: pnpm install --frozen-lockfile
-
-      # 设置版本号（从 package.json 读取，确保一致性）
-      - name: 设置版本号
-        id: version
-        run: |
-          # 从 package.json 读取版本号（单一数据源）
-          VERSION_NAME=$(node -p "require('./package.json').version")
-          BUILD_TIME=$(date -u '+%Y-%m-%d %H:%M:%S UTC')
-          COMMIT_COUNT=$(git rev-list --count HEAD)
-
-          echo "VERSION_NAME=$VERSION_NAME" >> $GITHUB_ENV
-          echo "BUILD_TIME=$BUILD_TIME" >> $GITHUB_ENV
-          echo "COMMIT_COUNT=$COMMIT_COUNT" >> $GITHUB_ENV
-
-          echo "📦 Release 版本号: $VERSION_NAME"
-          echo "📊 Git 提交总数: $COMMIT_COUNT"
-          echo "🕐 构建时间: $BUILD_TIME"
-          echo ""
-          echo "✅ 版本号来源: package.json (单一数据源)"
-
-      # 构建扩展
-      - name: Build extension
-        run: pnpm build
-
-      # 打包扩展
-      - name: Package extension
-        run: pnpm package
-
-      # 重命名 zip 文件
-      - name: Rename package
-        run: |
-          mkdir -p output
-          cp build/chrome-mv3-prod.zip output/droplink-v${{ env.VERSION_NAME }}.zip
-          echo "✅ 扩展包已重命名为: droplink-release-${{ env.VERSION_NAME }}.zip"
-
-      # 上传构建产物到 Artifacts
-      - name: Upload artifacts
-        uses: actions/upload-artifact@v4
-        with:
-          name: droplink-v${{ env.VERSION_NAME }}
-          path: output/droplink-v${{ env.VERSION_NAME }}.zip
-          retention-days: 90
-
-      # 自动发布到 GitHub Release (覆盖式发布 main-latest)
-      - name: Create or Update Main Release
-        uses: softprops/action-gh-release@v1
-        with:
-          tag_name: main-latest
-          name: "✅ 正式版 v${{ env.VERSION_NAME }} (最新稳定版)"
-          body: |
-            ## 📦 Droplink Chrome Extension 正式版
-
-            **版本号**: `v${{ env.VERSION_NAME }}`
-            **构建分支**: `main`
-            **提交 SHA**: `${{ github.sha }}`
-            **提交总数**: `${{ env.COMMIT_COUNT }}`
-            **构建时间**: `${{ env.BUILD_TIME }}`
-
-            ---
-
-            ### 📥 下载说明
-            - 这是**正式稳定版本**，已通过完整测试
-            - 每次 main 分支更新时，此 Release 会被**自动覆盖**
-            - 如需测试最新功能，请访问 [Dev 开发版 Release](../../releases/tag/dev-latest)
-
-            ### 🔗 固定下载链接（永久有效）
-            ```
-            https://github.com/${{ github.repository }}/releases/download/main-latest/droplink-v${{ env.VERSION_NAME }}.zip
-            ```
-
-            ### 📦 安装方法
-            1. 下载上面的 zip 文件
-            2. 解压缩文件
-            3. 打开 Chrome 浏览器，进入 `chrome://extensions/`
-            4. 开启右上角的"开发者模式"
-            5. 点击"加载已解压的扩展程序"
-            6. 选择解压后的文件夹
-
-            ### 📝 最近提交
-            ${{ github.event.head_commit.message }}
-          files: output/droplink-v${{ env.VERSION_NAME }}.zip
-          draft: false
-          prerelease: false  # 标记为正式版本
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      # 构建信息摘要
-      - name: Build summary
-        if: success()
-        run: |
-          echo "## ✅ Release 构建成功" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "- **版本号**: v${{ env.VERSION_NAME }}" >> $GITHUB_STEP_SUMMARY
-          echo "- **分支**: main" >> $GITHUB_STEP_SUMMARY
-          echo "- **提交**: ${{ github.sha }}" >> $GITHUB_STEP_SUMMARY
-          echo "- **提交总数**: ${{ env.COMMIT_COUNT }}" >> $GITHUB_STEP_SUMMARY
-          echo "- **构建时间**: ${{ env.BUILD_TIME }}" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "### 📥 固定下载链接" >> $GITHUB_STEP_SUMMARY
-          echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
-          echo "https://github.com/${{ github.repository }}/releases/download/main-latest/droplink-v${{ env.VERSION_NAME }}.zip" >> $GITHUB_STEP_SUMMARY
-          echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
+    uses: ./.github/workflows/build-shared.yml
+    with:
+      branch_name: master
+      release_tag: main-latest
+      release_title: "✅ 正式版 (最新稳定版)"
+      use_commit_count: false
+      file_prefix: "droplink-v"
+      is_prerelease: false
+      create_version_tag: true

@@ -20,7 +20,9 @@
       "Bash(npm run build:*)",
       "WebFetch(domain:stackoverflow.com)",
       "Skill(agent-browser)",
-      "Bash(./agent-browser open:*)"
+      "Bash(./agent-browser open:*)",
+      "Bash(git check-ignore:*)",
+      "Bash(git add:*)"
     ]
   },
   "outputStyle": "Learning"

@@ -1,0 +1,260 @@
+name: Shared Build Workflow
+
+# 可复用的 workflow，被 dev-build 和 main-build 调用
+on:
+  workflow_call:
+    inputs:
+      branch_name:
+        description: '分支名称（dev/master）'
+        required: true
+        type: string
+      release_tag:
+        description: 'Release 标签（dev-latest/main-latest）'
+        required: true
+        type: string
+      release_title:
+        description: 'Release 标题'
+        required: true
+        type: string
+      use_commit_count:
+        description: '是否使用提交计数作为版本号'
+        required: true
+        type: boolean
+      file_prefix:
+        description: '文件名前缀（droplink-dev/droplink-v）'
+        required: true
+        type: string
+      is_prerelease:
+        description: '是否为预发布版本'
+        required: true
+        type: boolean
+      create_version_tag:
+        description: '是否创建版本 tag 用于历史归档'
+        required: false
+        type: boolean
+        default: false
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    name: 构建扩展
+    runs-on: ubuntu-latest
+
+    steps:
+      # 检出代码
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # 获取完整历史记录
+
+      # 设置 Node.js
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+
+      # 设置 pnpm
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: 10
+
+      # 获取 pnpm store 目录
+      - name: Get pnpm store directory
+        shell: bash
+        run: |
+          echo "STORE_PATH=$(pnpm store path --silent)" >> $GITHUB_ENV
+
+      # 缓存依赖
+      - name: Setup pnpm cache
+        uses: actions/cache@v3
+        with:
+          path: ${{ env.STORE_PATH }}
+          key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
+          restore-keys: |
+            ${{ runner.os }}-pnpm-store-
+
+      # 安装依赖
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      # 设置版本号
+      - name: 设置版本号
+        id: version
+        run: |
+          BUILD_TIME=$(date -u '+%Y-%m-%d %H:%M:%S UTC')
+          COMMIT_COUNT=$(git rev-list --count HEAD)
+
+          if [ "${{ inputs.use_commit_count }}" = "true" ]; then
+            # Dev 版本：使用提交计数
+            VERSION_NAME="1.0.${COMMIT_COUNT}-dev"
+            echo "📦 Dev 版本号: $VERSION_NAME"
+            echo "📊 基于 Git 提交总数: $COMMIT_COUNT"
+            # 更新 package.json（仅用于构建）
+            npm version $VERSION_NAME --no-git-tag-version --allow-same-version
+          else
+            # 正式版本：从 package.json 读取
+            VERSION_NAME=$(node -p "require('./package.json').version")
+            echo "📦 Release 版本号: $VERSION_NAME"
+            echo "📊 Git 提交总数: $COMMIT_COUNT"
+            echo "✅ 版本号来源: package.json (单一数据源)"
+          fi
+
+          echo "VERSION_NAME=$VERSION_NAME" >> $GITHUB_ENV
+          echo "BUILD_TIME=$BUILD_TIME" >> $GITHUB_ENV
+          echo "COMMIT_COUNT=$COMMIT_COUNT" >> $GITHUB_ENV
+          echo "🕐 构建时间: $BUILD_TIME"
+
+      # 构建扩展
+      - name: Build extension
+        run: pnpm build
+
+      # 打包扩展
+      - name: Package extension
+        run: pnpm package
+
+      # 重命名 zip 文件
+      - name: Rename package
+        run: |
+          mkdir -p output
+          cp build/chrome-mv3-prod.zip output/${{ inputs.file_prefix }}${{ env.VERSION_NAME }}.zip
+          echo "✅ 扩展包已重命名为: ${{ inputs.file_prefix }}${{ env.VERSION_NAME }}.zip"
+
+      # 上传构建产物
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ inputs.file_prefix }}${{ env.VERSION_NAME }}
+          path: output/${{ inputs.file_prefix }}${{ env.VERSION_NAME }}.zip
+          retention-days: ${{ inputs.is_prerelease && 30 || 90 }}
+
+      # 创建或更新 tag（仅 dev 需要）
+      - name: Create or Update tag
+        if: inputs.is_prerelease
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git tag -f ${{ inputs.release_tag }}
+          git push -f origin ${{ inputs.release_tag }}
+          echo "✅ ${{ inputs.release_tag }} tag 已创建/更新"
+
+      # 创建版本 tag 用于历史归档（仅正式版需要）
+      - name: Create version tag for archive
+        if: inputs.create_version_tag
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          VERSION_TAG="v${{ env.VERSION_NAME }}"
+
+          # 检查 tag 是否已存在
+          if git rev-parse "$VERSION_TAG" >/dev/null 2>&1; then
+            echo "⚠️ Tag $VERSION_TAG 已存在，跳过创建"
+          else
+            git tag "$VERSION_TAG"
+            git push origin "$VERSION_TAG"
+            echo "✅ 版本 tag $VERSION_TAG 已创建用于历史归档"
+          fi
+
+      # 自动发布到 GitHub Release
+      - name: Create or Update Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ inputs.release_tag }}
+          name: ${{ inputs.release_title }}
+          body: |
+            ## 📦 Droplink Chrome Extension
+
+            **版本号**: `${{ env.VERSION_NAME }}`
+            **构建分支**: `${{ inputs.branch_name }}`
+            **提交 SHA**: `${{ github.sha }}`
+            **提交总数**: `${{ env.COMMIT_COUNT }}`
+            **构建时间**: `${{ env.BUILD_TIME }}`
+
+            ---
+
+            ### 📥 下载说明
+            ${{ inputs.is_prerelease && '- 这是**开发测试版本**，可能包含未完成的功能或 Bug' || '- 这是**正式稳定版本**，已通过完整测试' }}
+            - 每次 ${{ inputs.branch_name }} 分支更新时，此 Release 会被**自动覆盖**
+            ${{ inputs.is_prerelease && '- 如需稳定版本，请访问 [正式版 Release](../../releases/tag/main-latest)' || '- 如需测试最新功能，请访问 [Dev 开发版 Release](../../releases/tag/dev-latest)' }}
+            ${{ inputs.create_version_tag && format('- 历史归档版本：[v{0}](../../releases/tag/v{0})', env.VERSION_NAME) || '' }}
+
+            ### 🔗 固定下载链接（永久有效）
+            ```
+            https://github.com/${{ github.repository }}/releases/download/${{ inputs.release_tag }}/${{ inputs.file_prefix }}${{ env.VERSION_NAME }}.zip
+            ```
+
+            ### 📦 安装方法
+            1. 下载上面的 zip 文件
+            2. 解压缩文件
+            3. 打开 Chrome 浏览器，进入 `chrome://extensions/`
+            4. 开启右上角的"开发者模式"
+            5. 点击"加载已解压的扩展程序"
+            6. 选择解压后的文件夹
+
+            ### 📝 最近提交
+            ${{ github.event.head_commit.message }}
+          files: output/${{ inputs.file_prefix }}${{ env.VERSION_NAME }}.zip
+          draft: false
+          prerelease: ${{ inputs.is_prerelease }}
+          make_latest: ${{ !inputs.is_prerelease }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      # 创建版本归档 Release（仅正式版需要）
+      - name: Create version archive Release
+        if: inputs.create_version_tag
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v${{ env.VERSION_NAME }}
+          name: "📦 Droplink v${{ env.VERSION_NAME }}"
+          body: |
+            ## Droplink Chrome Extension v${{ env.VERSION_NAME }}
+
+            这是 **v${{ env.VERSION_NAME }}** 的历史归档版本。
+
+            ### 📥 下载
+            - [droplink-v${{ env.VERSION_NAME }}.zip](https://github.com/${{ github.repository }}/releases/download/v${{ env.VERSION_NAME }}/droplink-v${{ env.VERSION_NAME }}.zip)
+
+            ### 📦 安装方法
+            1. 下载上面的 zip 文件
+            2. 解压缩文件
+            3. 打开 Chrome 浏览器，进入 `chrome://extensions/`
+            4. 开启右上角的"开发者模式"
+            5. 点击"加载已解压的扩展程序"
+            6. 选择解压后的文件夹
+
+            ### ℹ️ 版本信息
+            - **版本号**: v${{ env.VERSION_NAME }}
+            - **构建时间**: ${{ env.BUILD_TIME }}
+            - **提交 SHA**: ${{ github.sha }}
+
+            ---
+
+            ### 🔗 获取最新版本
+            - [正式版 (最新稳定版)](../../releases/tag/main-latest)
+            - [Dev 开发版 (最新)](../../releases/tag/dev-latest)
+          files: output/droplink-v${{ env.VERSION_NAME }}.zip
+          draft: false
+          prerelease: false
+          make_latest: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      # 构建信息摘要
+      - name: Build summary
+        if: success()
+        run: |
+          echo "## ✅ 构建成功" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "- **版本号**: ${{ env.VERSION_NAME }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **分支**: ${{ inputs.branch_name }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **提交**: ${{ github.sha }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **提交总数**: ${{ env.COMMIT_COUNT }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **构建时间**: ${{ env.BUILD_TIME }}" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### 📥 固定下载链接" >> $GITHUB_STEP_SUMMARY
+          echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
+          echo "https://github.com/${{ github.repository }}/releases/download/${{ inputs.release_tag }}/${{ inputs.file_prefix }}${{ env.VERSION_NAME }}.zip" >> $GITHUB_STEP_SUMMARY
+          echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
