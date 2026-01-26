@@ -94,6 +94,7 @@ export type I18nKey =
   | "connect_extension_desc"
   | "refresh_qr_code"
   | "qr_code_expiry_hint"
+  | "qr_code_expires_in"
 
 /**
  * 获取翻译文本

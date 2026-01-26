@@ -412,7 +412,7 @@
     "description": "Get mobile app section title"
   },
   "get_mobile_app_desc": {
-    "message": "Take Gotify on the go. Download the official Android client to receive real-time push notifications directly on your mobile device.",
+    "message": "Take Droplink on the go. Download the official Android client droplink to receive real-time push notifications directly on your mobile device.",
     "description": "Get mobile app description"
   },
   "scan_to_download": {
@@ -444,11 +444,11 @@
     "description": "Welcome page subtitle"
   },
   "connect_extension_title": {
-    "message": "Connect Extension",
+    "message": "Bind Mobile App",
     "description": "Connect extension section title"
   },
   "connect_extension_desc": {
-    "message": "Open Gotify on your phone and scan the code below to instantly sync your server settings, tokens, and active subscriptions.",
+    "message": "Open the Droplink app on your phone and scan the QR code below to complete binding and automatically sync server configuration.",
     "description": "Connect extension section description"
   },
   "refresh_qr_code": {
@@ -458,6 +458,10 @@
   "qr_code_expiry_hint": {
     "message": "Codes expire every 5 minutes for security",
     "description": "QR code expiry security hint"
+  },
+  "qr_code_expires_in": {
+    "message": "Expires in: {time}",
+    "description": "QR code countdown display"
   },
   "settings_page_title": {
     "message": "Settings",

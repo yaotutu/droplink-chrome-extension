@@ -3,7 +3,7 @@
  * 高还原度实现设计图
  */
 
-import React, { useMemo, useState } from "react"
+import React, { useEffect, useMemo, useState } from "react"
 
 import {
   borderRadius,
@@ -17,7 +17,7 @@ import { QRCodeDisplay } from "~/shared/components/QRCodeDisplay"
 import { useStore } from "~/shared/store"
 import type { QRLoginData } from "~/shared/types"
 import { GOTIFY_SERVER_URL } from "~/shared/utils/constants"
-import { t } from "~/shared/utils/i18n"
+import { t, tWithPlaceholders } from "~/shared/utils/i18n"
 
 export const WelcomePage: React.FC = () => {
   // Android APK 下载链接
@@ -28,6 +28,10 @@ export const WelcomePage: React.FC = () => {
 
   // 二维码刷新key
   const [qrKey, setQrKey] = useState(0)
+  // 倒计时剩余秒数（5分钟 = 300秒）
+  const [countdown, setCountdown] = useState(300)
+  // 二维码生成时间戳
+  const [qrGeneratedAt, setQrGeneratedAt] = useState(Date.now())
 
   const handleDownload = () => {
     window.open(APK_DOWNLOAD_URL, "_blank")
@@ -36,7 +40,43 @@ export const WelcomePage: React.FC = () => {
   // 刷新二维码
   const handleRefreshQR = () => {
     setQrKey((prev) => prev + 1)
+    setQrGeneratedAt(Date.now()) // 更新生成时间
+    setCountdown(300) // 重置倒计时
   }
+
+  // 格式化倒计时为 MM:SS
+  const formatCountdown = (seconds: number): string => {
+    const minutes = Math.floor(seconds / 60)
+    const secs = seconds % 60
+    return `${minutes.toString().padStart(2, "0")}:${secs.toString().padStart(2, "0")}`
+  }
+
+  // 配置完整性检查
+  const isConfigComplete =
+    config.gotifyUrl && config.appToken && config.clientToken
+
+  // 倒计时逻辑
+  useEffect(() => {
+    // 如果配置不完整，不启动倒计时
+    if (!isConfigComplete) {
+      return
+    }
+
+    // 每秒更新倒计时
+    const timer = setInterval(() => {
+      setCountdown((prev) => {
+        if (prev <= 1) {
+          // 倒计时结束，自动刷新二维码
+          handleRefreshQR()
+          return 300 // 重置为 5 分钟
+        }
+        return prev - 1
+      })
+    }, 1000)
+
+    // 清理定时器（组件卸载时）
+    return () => clearInterval(timer)
+  }, [isConfigComplete, qrGeneratedAt])
 
   // 生成二维码数据
   const qrData: QRLoginData = useMemo(() => {
@@ -46,7 +86,7 @@ export const WelcomePage: React.FC = () => {
     return {
       version: "1.0",
       type: "droplink_qr_login",
-      timestamp: Date.now(),
+      timestamp: qrGeneratedAt, // 使用状态中的时间戳
       data: {
         gotifyServerUrl: config.gotifyUrl,
         appToken: config.appToken,
@@ -54,11 +94,9 @@ export const WelcomePage: React.FC = () => {
         serverName
       }
     }
-  }, [config.gotifyUrl, config.appToken, config.clientToken, qrKey])
+  }, [config.gotifyUrl, config.appToken, config.clientToken, qrGeneratedAt])
 
   const qrValue = JSON.stringify(qrData)
-  const isConfigComplete =
-    config.gotifyUrl && config.appToken && config.clientToken
 
   // 生成下载二维码（APK下载链接）
   const downloadQRValue = APK_DOWNLOAD_URL
@@ -127,6 +165,16 @@ export const WelcomePage: React.FC = () => {
                 <span style={styles.refreshIcon}>🔄</span>
                 {t("refresh_qr_code")}
               </button>
+
+              {/* 倒计时显示 */}
+              {isConfigComplete && (
+                <div style={styles.countdownText}>
+                  {tWithPlaceholders("qr_code_expires_in", {
+                    time: formatCountdown(countdown)
+                  })}
+                </div>
+              )}
+
               <div style={styles.securityHint}>
                 {t("qr_code_expiry_hint")}
               </div>
@@ -302,6 +350,13 @@ const styles: Record<string, React.CSSProperties> = {
   },
   refreshIcon: {
     fontSize: fontSize.base
+  },
+  countdownText: {
+    fontSize: fontSize.sm,
+    color: colors.primary,
+    fontWeight: fontWeight.medium,
+    fontFamily: "monospace", // 使用等宽字体，数字对齐更美观
+    letterSpacing: "0.5px"
   },
   securityHint: {
     fontSize: "11px",

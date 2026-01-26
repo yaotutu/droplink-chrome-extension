@@ -412,7 +412,7 @@
     "description": "获取移动应用区域标题"
   },
   "get_mobile_app_desc": {
-    "message": "随时随地使用 Gotify。下载官方 Android 客户端，直接在移动设备上接收实时推送通知。",
+    "message": "随时随地使用 Droplink。下载官方 Android 客户端 droplink，直接在移动设备上接收实时推送通知。",
     "description": "获取移动应用描述"
   },
   "scan_to_download": {
@@ -444,11 +444,11 @@
     "description": "欢迎页面副标题"
   },
   "connect_extension_title": {
-    "message": "连接扩展",
+    "message": "绑定手机应用",
     "description": "连接扩展区域标题"
   },
   "connect_extension_desc": {
-    "message": "在手机上打开 Gotify 并扫描下方二维码，即可同步服务器设置、Token 和订阅信息。",
+    "message": "打开手机上的 Droplink 应用，扫描下方二维码即可完成绑定，自动同步服务器配置。",
     "description": "连接扩展区域描述"
   },
   "refresh_qr_code": {
@@ -458,6 +458,10 @@
   "qr_code_expiry_hint": {
     "message": "二维码每 5 分钟过期以确保安全",
     "description": "二维码过期安全提示"
+  },
+  "qr_code_expires_in": {
+    "message": "有效期：{time}",
+    "description": "二维码倒计时显示"
   },
   "settings_page_title": {
     "message": "设置",
