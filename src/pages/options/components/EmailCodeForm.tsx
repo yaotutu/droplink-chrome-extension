@@ -217,6 +217,8 @@ export function EmailCodeForm({ onLoginSuccess }: EmailCodeFormProps) {
         <span style={styles.hintText}>{t("auto_register_hint")}</span>
       </div>
 
+      {/* 隐藏服务器地址输入框，使用默认值 */}
+      {/*
       <div style={styles.formGroup}>
         <label style={styles.label}>
           {t("auth_server_label")} <span style={styles.required}>*</span>
@@ -244,6 +246,7 @@ export function EmailCodeForm({ onLoginSuccess }: EmailCodeFormProps) {
           disabled={loading || verifying}
         />
       </div>
+      */}
 
       <div style={styles.formGroup}>
         <label style={styles.label}>
